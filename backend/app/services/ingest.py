@@ -159,6 +159,7 @@ def upsert_jobs_from_dataframe(
             search_profile_id=profile.id,
             scrape_run_id=scrape_run_id,
             is_active=True,
+            last_verified_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
 

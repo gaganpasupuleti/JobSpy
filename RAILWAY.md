@@ -30,10 +30,18 @@ No `VITE_API_URL` needed — frontend calls the API on the same domain.
 
 ### Worker (optional, separate service)
 
-Same `backend/Dockerfile`, start command:
+Same `backend/Dockerfile`, start command examples:
 ```
 python /app/run_worker.py --once --limit 10
+python /app/run_worker.py --verify-links --verify-limit 200
 ```
+
+Or call the API directly:
+```
+POST /api/v1/admin/jobs/verify-links?limit=100
+```
+
+This checks stored job URLs and hides listings that return 404/410 or show an expired/removed page.
 
 ## Split services (alternative)
 

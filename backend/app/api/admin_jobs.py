@@ -8,6 +8,7 @@ from app.api.deps import verify_admin_key
 from app.db.models import Job
 from app.db.session import get_db
 from app.services.skills import extract_key_skills
+from app.services.link_verify import verify_job_links
 
 router = APIRouter(
     prefix="/admin/jobs",
@@ -97,3 +98,22 @@ def backfill_skills(
             updated += 1
     db.commit()
     return {"processed": len(jobs), "updated": updated}
+
+
+@router.post("/verify-links")
+def verify_links(
+    limit: int = Query(100, ge=1, le=1000),
+    site: str | None = Query(None, description="Only verify jobs from this site"),
+    stale_hours: int | None = Query(None, ge=1, le=720),
+    db: Session = Depends(get_db),
+):
+    """
+    Check whether stored job URLs still work. Jobs that return 404/410 or show
+    an expired/removed message are marked inactive and hidden from the board.
+    """
+    stats = verify_job_links(db, limit=limit, site=site, stale_hours=stale_hours)
+    deactivated_sample = stats.pop("deactivated_jobs", [])[:25]
+    return {
+        **stats,
+        "deactivated_sample": deactivated_sample,
+    }

@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     default_results_wanted: int = 20
     default_hours_old: int = 168
     default_sites: str = "indeed,linkedin,naukri,foundit"
+    link_verify_batch_size: int = 100
+    link_verify_sleep_seconds: float = 1.0
+    link_verify_stale_hours: int = 72
 
     @property
     def cors_origin_list(self) -> list[str]:

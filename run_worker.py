@@ -25,11 +25,37 @@ def main() -> int:
     parser.add_argument("--once", action="store_true", help="Run one pass and exit")
     parser.add_argument("--profile-id", type=int, help="Scrape a single search profile")
     parser.add_argument("--limit", type=int, default=0, help="Max profiles per pass (0 = all)")
+    parser.add_argument(
+        "--verify-links",
+        action="store_true",
+        help="Check stored job URLs and deactivate expired/removed listings",
+    )
+    parser.add_argument(
+        "--verify-limit",
+        type=int,
+        default=0,
+        help="Max jobs to verify when using --verify-links (0 = config default)",
+    )
     args = parser.parse_args()
 
     db = SessionLocal()
     try:
         seed_database(db)
+
+        if args.verify_links:
+            from app.services.link_verify import verify_job_links
+
+            limit = args.verify_limit or None
+            stats = verify_job_links(db, limit=limit)
+            print(
+                f"Link verify: processed={stats['processed']} "
+                f"still_active={stats['still_active']} "
+                f"deactivated={stats['deactivated']} "
+                f"inconclusive={stats['inconclusive']}"
+            )
+            for item in stats.get("deactivated_jobs", [])[:10]:
+                print(f"  - [{item['site']}] {item['title']} ({item['reason']})")
+            return 0
 
         while True:
             query = db.query(SearchProfile).filter(SearchProfile.is_active.is_(True))
