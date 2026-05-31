@@ -6,9 +6,19 @@ from sqlalchemy.orm import Session
 
 from app.db.models import ExperienceBand, Job, Keyword, Location, RoleCategory
 from app.db.session import get_db
-from app.schemas.meta import ExperienceBandOut, KeywordOut, LocationOut, RoleCategoryOut
+from app.config import settings
+from app.schemas.meta import ConfigOut, ExperienceBandOut, KeywordOut, LocationOut, RoleCategoryOut
 
 router = APIRouter(prefix="/meta", tags=["meta"])
+
+
+@router.get("/config", response_model=ConfigOut)
+def get_config():
+    return ConfigOut(
+        default_sites=settings.site_list,
+        default_results_wanted=settings.default_results_wanted,
+        default_hours_old=settings.default_hours_old,
+    )
 
 
 @router.get("/roles", response_model=list[RoleCategoryOut])

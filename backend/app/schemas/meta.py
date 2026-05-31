@@ -41,3 +41,9 @@ class KeywordOut(BaseModel):
     term: str
     is_primary: bool
     role_category_id: int
+
+
+class ConfigOut(BaseModel):
+    default_sites: list[str]
+    default_results_wanted: int
+    default_hours_old: int

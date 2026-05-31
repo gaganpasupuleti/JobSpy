@@ -23,6 +23,7 @@ One Railway service serves everything at one URL:
    - `DATABASE_URL` → reference Postgres
    - `ADMIN_API_KEY` → your secret
    - `CORS_ORIGINS` → `*` (optional for same-origin)
+   - `DEFAULT_SITES` → `indeed,linkedin,naukri,foundit` (omit to use code default)
 4. **Generate Domain** → one URL for students and API
 
 No `VITE_API_URL` needed — frontend calls the API on the same domain.
