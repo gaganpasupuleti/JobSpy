@@ -34,6 +34,11 @@ export function experienceLabel(bands, bandId) {
   return band?.label || null;
 }
 
+export function roleLabel(roles, roleId) {
+  const role = roles.find((r) => r.id === roleId);
+  return role?.name || null;
+}
+
 export function parseSkills(keySkills) {
   if (!keySkills) return [];
   return keySkills.split(",").map((s) => s.trim()).filter(Boolean);
