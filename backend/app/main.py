@@ -1,12 +1,17 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api import admin, jobs, meta
 from app.config import settings
 from app.db.session import SessionLocal
 from app.seed.seed import seed_database
+
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 
 @asynccontextmanager
@@ -42,3 +47,32 @@ app.include_router(admin.router, prefix="/api/v1")
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+def _mount_frontend() -> None:
+    if not STATIC_DIR.is_dir():
+        return
+
+    assets_dir = STATIC_DIR / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/", include_in_schema=False)
+    async def spa_root():
+        return FileResponse(STATIC_DIR / "index.html")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa_fallback(full_path: str):
+        blocked_prefixes = ("api/", "docs", "redoc", "openapi.json")
+        if full_path == "health" or full_path.startswith(blocked_prefixes):
+            raise HTTPException(status_code=404, detail="Not Found")
+
+        candidate = (STATIC_DIR / full_path).resolve()
+        if not str(candidate).startswith(str(STATIC_DIR.resolve())):
+            raise HTTPException(status_code=404, detail="Not Found")
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(STATIC_DIR / "index.html")
+
+
+_mount_frontend()

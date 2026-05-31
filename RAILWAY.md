@@ -1,49 +1,45 @@
 # Railway deployment guide
 
-Deploy **3 services** from this repo on [Railway](https://railway.app):
+Deploy **one combined service** (API + student frontend) or split services if you prefer.
 
-## 1. PostgreSQL
-- Add **PostgreSQL** plugin to your project
-- Railway auto-injects `DATABASE_URL`
+## Single service (recommended)
 
-## 2. API service
-- **Root directory:** repo root
-- **Config file:** `railway.toml`
-- **Dockerfile:** `backend/Dockerfile`
-- **Variables:**
-  - `DATABASE_URL` → reference from Postgres service
-  - `ADMIN_API_KEY` → generate a secret
-  - `CORS_ORIGINS` → `*` or your frontend URL
-- **Health check:** `/health`
-- Generate domain → note URL e.g. `https://jobboard-api-production.up.railway.app`
+One Railway service serves everything at one URL:
 
-## 3. Frontend service
-- **Root directory:** repo root
-- **Config file:** `frontend/railway.toml`
-- **Dockerfile:** `frontend/Dockerfile`
-- **Build variable:**
-  - `VITE_API_URL` = `https://YOUR-API-URL.railway.app` (no trailing slash)
-- Generate domain → public student portal
+| Path | What |
+|------|------|
+| `/` | Student job board (React UI) |
+| `/health` | API health check |
+| `/docs` | Swagger API docs |
+| `/api/v1/*` | REST API |
 
-## 4. Worker service (optional)
-- Same image as API (`backend/Dockerfile`)
-- **Start command:** `python /app/run_worker.py --once --limit 10`
-- Link same `DATABASE_URL`
-- Use Railway Cron every 6 hours
+### Setup
 
-## CLI deploy (after `railway login`)
+1. **PostgreSQL** plugin → `DATABASE_URL` auto-injected
+2. **JobSpy service** from GitHub (`gaganpasupuleti/JobSpy`, branch `main`)
+   - Uses root `railway.toml` → `backend/Dockerfile`
+   - Dockerfile builds frontend + API in one image
+3. **Variables:**
+   - `DATABASE_URL` → reference Postgres
+   - `ADMIN_API_KEY` → your secret
+   - `CORS_ORIGINS` → `*` (optional for same-origin)
+4. **Generate Domain** → one URL for students and API
 
-```powershell
-cd JobSpy
-railway init
-railway add --database postgres
-railway variables set ADMIN_API_KEY=your-secret-key
-railway up
-railway domain
+No `VITE_API_URL` needed — frontend calls the API on the same domain.
+
+### Worker (optional, separate service)
+
+Same `backend/Dockerfile`, start command:
 ```
+python /app/run_worker.py --once --limit 10
+```
+
+## Split services (alternative)
+
+If you prefer separate URLs, deploy a second service with `frontend/Dockerfile` and set `VITE_API_URL` to your API domain. See `frontend/README.md`.
 
 ## Trigger first scrape
 
 ```powershell
-curl -X POST "https://YOUR-API/api/v1/admin/scrape/run?limit=1" -H "X-Admin-Key: your-secret-key"
+curl -X POST "https://YOUR-URL/api/v1/admin/scrape/run?limit=3" -H "X-Admin-Key: YOUR_KEY"
 ```
