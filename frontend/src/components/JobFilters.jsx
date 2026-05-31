@@ -70,6 +70,7 @@ export default function JobFilters({ filters, meta, onChange, onSearch, loading 
             <option value="indeed">Indeed</option>
             <option value="linkedin">LinkedIn</option>
             <option value="naukri">Naukri</option>
+            <option value="foundit">Foundit</option>
           </select>
         </label>
 

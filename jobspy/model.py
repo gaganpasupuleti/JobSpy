@@ -292,6 +292,7 @@ class Site(Enum):
     GOOGLE = "google"
     BAYT = "bayt"
     NAUKRI = "naukri"
+    FOUNDIT = "foundit"
     BDJOBS = "bdjobs"  # Add this line
 
 

@@ -24,6 +24,7 @@ export function siteLabel(site) {
     indeed: "Indeed",
     linkedin: "LinkedIn",
     naukri: "Naukri",
+    foundit: "Foundit",
     glassdoor: "Glassdoor",
   };
   return labels[site] || site;

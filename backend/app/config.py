@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     scrape_sleep_seconds: int = 45
     default_results_wanted: int = 20
     default_hours_old: int = 168
-    default_sites: str = "indeed,linkedin,naukri"
+    default_sites: str = "indeed,linkedin,naukri,foundit"
 
     @property
     def cors_origin_list(self) -> list[str]:

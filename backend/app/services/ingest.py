@@ -27,6 +27,13 @@ def extract_external_id(site: str, job_url: str, row_id: str | None) -> str:
         match = re.search(r"/(\d+)(?:\?|$)", job_url)
         if match:
             return match.group(1)
+    if site == "foundit":
+        if row_id:
+            cleaned = str(row_id).split("-", 1)[-1] if "-" in str(row_id) else str(row_id)
+            return cleaned
+        match = re.search(r"/job/(\d+)", job_url)
+        if match:
+            return match.group(1)
     if row_id:
         cleaned = str(row_id).split("-", 1)[-1] if "-" in str(row_id) else str(row_id)
         return cleaned
