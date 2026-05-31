@@ -39,6 +39,7 @@ log = create_logger("Naukri")
 
 class Naukri(Scraper):
     base_url = "https://www.naukri.com/jobapi/v3/search"
+    detail_url = "https://www.naukri.com/jobapi/v4/job/{job_id}"
     delay = 3
     band_delay = 4
     jobs_per_page = 20  
@@ -130,8 +131,7 @@ class Naukri(Scraper):
                 log.debug(f"Processing job ID: {job_id}")
 
                 try:
-                    fetch_desc = scraper_input.linkedin_fetch_description
-                    job_post = self._process_job(job, job_id, fetch_desc)
+                    job_post = self._process_job(job, job_id)
                     if job_post:
                         job_list.append(job_post)
                         log.info(f"Added job: {job_post.title} (ID: {job_id})")
@@ -149,9 +149,65 @@ class Naukri(Scraper):
         log.info(f"Scraping completed. Total jobs collected: {len(job_list)}")
         return JobResponse(jobs=job_list)
 
-    def _process_job(
-        self, job: dict, job_id: str, full_descr: bool
-    ) -> Optional[JobPost]:
+    def _fetch_job_detail(self, job_id: str) -> dict | None:
+        """Fetch full job payload from Naukri detail API (search often omits description)."""
+        try:
+            response = self.session.get(
+                self.detail_url.format(job_id=job_id),
+                timeout=10,
+            )
+            if response.status_code not in range(200, 400):
+                log.debug(
+                    f"Naukri detail API status {response.status_code} for job {job_id}"
+                )
+                return None
+            data = response.json()
+            return data.get("jobDetails") or data
+        except Exception as exc:
+            log.debug(f"Naukri detail fetch failed for job {job_id}: {exc}")
+            return None
+
+    def _build_fallback_description(self, job: dict) -> str | None:
+        """Build a short summary when full JD is unavailable."""
+        parts: list[str] = []
+        if job.get("tagsAndSkills"):
+            parts.append(f"Key skills: {job['tagsAndSkills']}")
+        if job.get("experienceText"):
+            parts.append(f"Experience: {job['experienceText']}")
+        for placeholder in job.get("placeholders") or []:
+            label = placeholder.get("label")
+            if not label:
+                continue
+            if placeholder.get("type") == "salary":
+                parts.append(f"Salary: {label}")
+            elif placeholder.get("type") == "location":
+                parts.append(f"Location: {label}")
+        if job.get("vacancy"):
+            parts.append(f"Vacancies: {job['vacancy']}")
+        if job.get("roleCategory"):
+            parts.append(f"Role category: {job['roleCategory']}")
+        return "\n".join(parts) if parts else None
+
+    def _resolve_description(self, job: dict, job_id: str) -> str | None:
+        raw_description = job.get("jobDescription")
+        if not raw_description:
+            detail = self._fetch_job_detail(job_id)
+            if detail:
+                for key in ("tagsAndSkills", "experienceText", "vacancy", "roleCategory"):
+                    if detail.get(key) and not job.get(key):
+                        job[key] = detail[key]
+                raw_description = detail.get("description") or detail.get("jobDescription")
+            time.sleep(random.uniform(0.4, 1.0))
+
+        if not raw_description:
+            raw_description = self._build_fallback_description(job)
+
+        if raw_description and self.scraper_input.description_format == DescriptionFormat.MARKDOWN:
+            raw_description = markdown_converter(raw_description)
+
+        return raw_description
+
+    def _process_job(self, job: dict, job_id: str) -> Optional[JobPost]:
         """
         Processes a single job from API response into a JobPost object
         """
@@ -164,20 +220,20 @@ class Naukri(Scraper):
         date_posted = self._parse_date(job.get("footerPlaceholderLabel"), job.get("createdDate"))
 
         job_url = f"https://www.naukri.com{job.get('jdURL', f'/job/{job_id}')}"
-        raw_description = job.get("jobDescription")
+        description = self._resolve_description(job, job_id)
 
-        job_type = parse_job_type(raw_description) if raw_description else None
-        company_industry = parse_company_industry(raw_description) if raw_description else None
-
-        description = raw_description
-        if description and self.scraper_input.description_format == DescriptionFormat.MARKDOWN:
-            description = markdown_converter(description)
+        job_type = parse_job_type(description) if description else None
+        company_industry = parse_company_industry(description) if description else None
 
         is_remote = is_job_remote(title, description or "", location)
         company_logo = job.get("logoPathV3") or job.get("logoPath")
 
         # Naukri-specific fields
-        skills = job.get("tagsAndSkills", "").split(",") if job.get("tagsAndSkills") else None
+        skills = (
+            [s.strip() for s in job.get("tagsAndSkills", "").split(",") if s.strip()]
+            if job.get("tagsAndSkills")
+            else None
+        )
         experience_range = job.get("experienceText")
         ambition_box = job.get("ambitionBoxData", {})
         company_rating = float(ambition_box.get("AggregateRating")) if ambition_box.get("AggregateRating") else None

@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.api.deps import verify_admin_key
@@ -11,6 +14,62 @@ router = APIRouter(
     tags=["admin"],
     dependencies=[Depends(verify_admin_key)],
 )
+
+
+def _backfill_naukri_job(job: Job, naukri) -> bool:
+    job_payload = {}
+    if job.key_skills:
+        job_payload["tagsAndSkills"] = job.key_skills
+    description = naukri._resolve_description(job_payload, job.external_id)
+    if not description:
+        return False
+    job.description = description
+    job.key_skills = extract_key_skills(
+        description=description,
+        raw_skills=job.key_skills or job_payload.get("tagsAndSkills"),
+        title=job.title,
+    )
+    job.updated_at = datetime.utcnow()
+    return True
+
+
+@router.post("/backfill-naukri-descriptions")
+def backfill_naukri_descriptions(
+    limit: int = Query(50, ge=1, le=500),
+    db: Session = Depends(get_db),
+):
+    """Fetch missing Naukri descriptions via detail API for jobs already in the DB."""
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3]
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+    from jobspy.model import DescriptionFormat, ScraperInput, Site
+    from jobspy.naukri import Naukri
+
+    jobs = (
+        db.query(Job)
+        .filter(Job.site == "naukri", Job.is_active.is_(True))
+        .filter(or_(Job.description.is_(None), Job.description == ""))
+        .limit(limit)
+        .all()
+    )
+
+    naukri = Naukri()
+    naukri.scraper_input = ScraperInput(
+        site_type=[Site.NAUKRI],
+        description_format=DescriptionFormat.MARKDOWN,
+    )
+
+    updated = 0
+    for job in jobs:
+        if _backfill_naukri_job(job, naukri):
+            updated += 1
+
+    db.commit()
+    return {"processed": len(jobs), "updated": updated}
 
 
 @router.post("/backfill-skills")
