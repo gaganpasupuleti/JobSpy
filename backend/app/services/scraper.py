@@ -17,7 +17,7 @@ from app.db.models import SearchProfile
 
 def run_search_profile(profile: SearchProfile) -> pd.DataFrame:
     location = profile.location.indeed_location_string if profile.location else None
-    sites = profile.sites or settings.site_list
+    sites = settings.site_list
 
     return scrape_jobs(
         site_name=sites,
