@@ -22,6 +22,7 @@ class JobListOut(BaseModel):
     salary_interval: str | None
     date_posted: date | None
     job_url: str
+    key_skills: str | None = None
     role_category_id: int | None
     location_id: int | None
     experience_band_id: int | None

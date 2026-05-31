@@ -142,6 +142,7 @@ class Job(Base):
     job_url: Mapped[str] = mapped_column(Text, nullable=False)
     job_url_direct: Mapped[str | None] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
+    key_skills: Mapped[str | None] = mapped_column(Text)
     description_format: Mapped[str | None] = mapped_column(String(32))
     city: Mapped[str | None] = mapped_column(String(128))
     state: Mapped[str | None] = mapped_column(String(128))

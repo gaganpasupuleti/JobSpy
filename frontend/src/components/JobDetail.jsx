@@ -1,4 +1,4 @@
-import { formatDate, formatSalary, siteLabel, experienceLabel, roleLabel } from "../utils/format";
+import { formatDate, formatSalary, siteLabel, experienceLabel, roleLabel, parseSkills } from "../utils/format";
 
 export default function JobDetail({
   job,
@@ -16,6 +16,7 @@ export default function JobDetail({
   const salary = formatSalary(job);
   const exp = experienceLabel(bands, job.experience_band_id);
   const role = roleLabel(roles, job.role_category_id);
+  const skills = parseSkills(job.key_skills);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -51,11 +52,28 @@ export default function JobDetail({
           )}
         </div>
 
+        {skills.length > 0 && (
+          <div className="detail-skills">
+            <h3>Key skills</h3>
+            <div className="skill-chips">
+              {skills.map((skill) => (
+                <span key={skill} className="skill-chip">{skill}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {job.description && (
           <div className="detail-description">
-            <h3>Description</h3>
+            <h3>Job description</h3>
             <div className="description-body">{job.description}</div>
           </div>
+        )}
+
+        {!job.description && !skills.length && (
+          <p className="detail-empty-note">
+            Full description not available from {siteLabel(job.site)}. Click Apply to view on the original posting.
+          </p>
         )}
 
         <div className="detail-actions">

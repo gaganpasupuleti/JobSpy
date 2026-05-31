@@ -1,9 +1,11 @@
-import { siteLabel } from "../utils/format";
+import { siteLabel, parseSkills } from "../utils/format";
 
 export default function JobCard({ job, roles, bands, saved, onSelect, onSave, onUnsave }) {
   const salary = job.min_amount || job.max_amount
     ? `${job.currency || ""} ${job.min_amount || ""}${job.max_amount ? `–${job.max_amount}` : ""}`
     : null;
+
+  const skills = parseSkills(job.key_skills).slice(0, 4);
 
   return (
     <article className="job-card" onClick={() => onSelect(job.id)}>
@@ -26,6 +28,16 @@ export default function JobCard({ job, roles, bands, saved, onSelect, onSave, on
       <p className="job-location">
         {job.location_display || [job.city, job.state].filter(Boolean).join(", ") || "India"}
       </p>
+      {skills.length > 0 && (
+        <div className="skill-chips compact">
+          {skills.map((skill) => (
+            <span key={skill} className="skill-chip">{skill}</span>
+          ))}
+          {parseSkills(job.key_skills).length > 4 && (
+            <span className="skill-chip more">+{parseSkills(job.key_skills).length - 4}</span>
+          )}
+        </div>
+      )}
       <div className="job-meta">
         {salary && <span className="meta-chip salary">{salary}</span>}
         {job.job_type && <span className="meta-chip">{job.job_type}</span>}

@@ -385,6 +385,54 @@ body {
   opacity: 0.8;
 }
 
+.skill-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.skill-chips.compact {
+  margin-bottom: 0.5rem;
+}
+
+.skill-chip {
+  font-size: 0.72rem;
+  font-weight: 500;
+  background: #eef4ff;
+  color: #1e4a8a;
+  padding: 0.25rem 0.55rem;
+  border-radius: 99px;
+  border: 1px solid #c7daf5;
+}
+
+.skill-chip.more {
+  background: var(--bg);
+  color: var(--ink-muted);
+  border-color: var(--border);
+}
+
+.detail-skills {
+  margin-bottom: 1.25rem;
+}
+
+.detail-skills h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  margin: 0 0 0.75rem;
+}
+
+.detail-empty-note {
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  background: var(--bg);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
 /* Modal */
 .modal-overlay {
   position: fixed;

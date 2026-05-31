@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import ExperienceBand, Job, JobKeyword, Keyword, RoleCategory, SearchProfile
 from app.services.experience import infer_experience
+from app.services.skills import extract_key_skills
 
 
 def extract_external_id(site: str, job_url: str, row_id: str | None) -> str:
@@ -104,6 +105,12 @@ def upsert_jobs_from_dataframe(
 
         location_display = _safe_str(row.get("location"))
         city, state = _split_location(location_display)
+        description = _safe_str(row.get("description"))
+        key_skills = extract_key_skills(
+            description=description,
+            raw_skills=_safe_str(row.get("skills")),
+            title=_safe_str(row.get("title")),
+        )
 
         existing = (
             db.query(Job)
@@ -119,7 +126,8 @@ def upsert_jobs_from_dataframe(
             company_url=_safe_str(row.get("company_url")),
             job_url=job_url,
             job_url_direct=_safe_str(row.get("job_url_direct")),
-            description=_safe_str(row.get("description")),
+            description=description,
+            key_skills=key_skills,
             description_format="markdown",
             city=city,
             state=state,
