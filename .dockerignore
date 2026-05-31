@@ -1,0 +1,15 @@
+.git
+.github
+.venv
+venv
+__pycache__
+*.pyc
+*.csv
+.env
+.idea
+.ipynb_checkpoints
+dist
+*.md
+!backend/README.md
+hyd_*
+run_hyd_fresher_scrape.py

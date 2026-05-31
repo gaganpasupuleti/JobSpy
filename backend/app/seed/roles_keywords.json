@@ -1,0 +1,172 @@
+{
+  "experience_bands": [
+    {"slug": "intern", "label": "Internship", "sort_order": 1},
+    {"slug": "fresher", "label": "Fresher / Entry Level", "sort_order": 2},
+    {"slug": "junior", "label": "Junior (1-3 years)", "sort_order": 3},
+    {"slug": "mid", "label": "Mid Level (3-5 years)", "sort_order": 4},
+    {"slug": "senior", "label": "Senior (5+ years)", "sort_order": 5},
+    {"slug": "manager", "label": "Manager / Lead", "sort_order": 6}
+  ],
+  "role_categories": [
+    {
+      "slug": "data_analytics",
+      "name": "Data & Analytics",
+      "description": "Data analyst, BI, and analytics roles",
+      "sort_order": 1,
+      "keywords": [
+        {"term": "data analyst", "is_primary": true},
+        {"term": "data analytics", "is_primary": true},
+        {"term": "business analyst", "is_primary": true},
+        {"term": "BI developer", "is_primary": false},
+        {"term": "Power BI", "is_primary": false},
+        {"term": "Tableau", "is_primary": false},
+        {"term": "SQL analyst", "is_primary": false}
+      ],
+      "search_term": "\"data analyst\" OR \"data analytics\" OR \"business analyst\" OR \"BI developer\""
+    },
+    {
+      "slug": "software_engineering",
+      "name": "Software Engineering",
+      "description": "Software development and engineering roles",
+      "sort_order": 2,
+      "keywords": [
+        {"term": "software engineer", "is_primary": true},
+        {"term": "backend developer", "is_primary": true},
+        {"term": "full stack developer", "is_primary": true},
+        {"term": "Java developer", "is_primary": false},
+        {"term": "Python developer", "is_primary": false},
+        {"term": "frontend developer", "is_primary": false}
+      ],
+      "search_term": "\"software engineer\" OR \"backend developer\" OR \"full stack\" OR \"Java developer\" OR \"Python developer\""
+    },
+    {
+      "slug": "data_science_ai",
+      "name": "Data Science & AI",
+      "description": "ML, AI, and data science roles",
+      "sort_order": 3,
+      "keywords": [
+        {"term": "data scientist", "is_primary": true},
+        {"term": "machine learning engineer", "is_primary": true},
+        {"term": "AI engineer", "is_primary": true},
+        {"term": "NLP engineer", "is_primary": false},
+        {"term": "deep learning", "is_primary": false}
+      ],
+      "search_term": "\"data scientist\" OR \"machine learning engineer\" OR \"AI engineer\" OR \"NLP engineer\""
+    },
+    {
+      "slug": "devops_cloud",
+      "name": "DevOps & Cloud",
+      "description": "DevOps, cloud, and SRE roles",
+      "sort_order": 4,
+      "keywords": [
+        {"term": "DevOps engineer", "is_primary": true},
+        {"term": "cloud engineer", "is_primary": true},
+        {"term": "AWS", "is_primary": false},
+        {"term": "Azure", "is_primary": false},
+        {"term": "SRE", "is_primary": false}
+      ],
+      "search_term": "\"DevOps engineer\" OR \"cloud engineer\" OR \"site reliability engineer\" OR \"AWS engineer\""
+    },
+    {
+      "slug": "qa_testing",
+      "name": "QA & Testing",
+      "description": "Quality assurance and testing roles",
+      "sort_order": 5,
+      "keywords": [
+        {"term": "QA engineer", "is_primary": true},
+        {"term": "software tester", "is_primary": true},
+        {"term": "automation tester", "is_primary": true},
+        {"term": "Selenium", "is_primary": false}
+      ],
+      "search_term": "\"QA engineer\" OR \"software tester\" OR \"automation tester\" OR \"quality assurance\""
+    },
+    {
+      "slug": "product_management",
+      "name": "Product Management",
+      "description": "Product manager and analyst roles",
+      "sort_order": 6,
+      "keywords": [
+        {"term": "product manager", "is_primary": true},
+        {"term": "associate product manager", "is_primary": true},
+        {"term": "product analyst", "is_primary": true}
+      ],
+      "search_term": "\"product manager\" OR \"associate product manager\" OR \"product analyst\""
+    },
+    {
+      "slug": "design_ux",
+      "name": "Design & UX",
+      "description": "UI/UX and design roles",
+      "sort_order": 7,
+      "keywords": [
+        {"term": "UI UX designer", "is_primary": true},
+        {"term": "graphic designer", "is_primary": true},
+        {"term": "product designer", "is_primary": true}
+      ],
+      "search_term": "\"UI UX designer\" OR \"graphic designer\" OR \"product designer\""
+    },
+    {
+      "slug": "digital_marketing",
+      "name": "Digital Marketing",
+      "description": "Marketing, SEO, and social media roles",
+      "sort_order": 8,
+      "keywords": [
+        {"term": "digital marketing", "is_primary": true},
+        {"term": "SEO", "is_primary": true},
+        {"term": "social media", "is_primary": false},
+        {"term": "performance marketing", "is_primary": false}
+      ],
+      "search_term": "\"digital marketing\" OR \"SEO specialist\" OR \"social media manager\" OR \"performance marketing\""
+    },
+    {
+      "slug": "finance_accounts",
+      "name": "Finance & Accounts",
+      "description": "Finance, accounting, and audit roles",
+      "sort_order": 9,
+      "keywords": [
+        {"term": "accountant", "is_primary": true},
+        {"term": "financial analyst", "is_primary": true},
+        {"term": "CA intern", "is_primary": false},
+        {"term": "audit associate", "is_primary": false}
+      ],
+      "search_term": "\"accountant\" OR \"financial analyst\" OR \"CA intern\" OR \"audit associate\""
+    },
+    {
+      "slug": "hr_operations",
+      "name": "HR & Operations",
+      "description": "HR, recruiting, and operations roles",
+      "sort_order": 10,
+      "keywords": [
+        {"term": "HR executive", "is_primary": true},
+        {"term": "recruiter", "is_primary": true},
+        {"term": "operations executive", "is_primary": true},
+        {"term": "admin executive", "is_primary": false}
+      ],
+      "search_term": "\"HR executive\" OR \"recruiter\" OR \"operations executive\" OR \"admin executive\""
+    },
+    {
+      "slug": "sales_bd",
+      "name": "Sales & Business Development",
+      "description": "Sales and BD roles",
+      "sort_order": 11,
+      "keywords": [
+        {"term": "business development", "is_primary": true},
+        {"term": "sales executive", "is_primary": true},
+        {"term": "inside sales", "is_primary": false}
+      ],
+      "search_term": "\"business development\" OR \"sales executive\" OR \"inside sales\""
+    },
+    {
+      "slug": "core_engineering",
+      "name": "Core Engineering",
+      "description": "Mechanical, civil, electrical engineering roles",
+      "sort_order": 12,
+      "keywords": [
+        {"term": "mechanical engineer", "is_primary": true},
+        {"term": "civil engineer", "is_primary": true},
+        {"term": "electrical engineer", "is_primary": true},
+        {"term": "ECE engineer", "is_primary": false}
+      ],
+      "search_term": "\"mechanical engineer\" OR \"civil engineer\" OR \"electrical engineer\" OR \"ECE engineer\""
+    }
+  ]
+}

@@ -8,3 +8,9 @@
 *.pyc
 .env
 dist
+*.csv
+hyd_*
+run_hyd_fresher_scrape.py
+frontend/node_modules/
+frontend/dist/
+.railway/

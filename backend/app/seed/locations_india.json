@@ -1,0 +1,19 @@
+{
+  "locations": [
+    {"city": "Hyderabad", "state": "Telangana", "display_name": "Hyderabad, Telangana", "indeed_location_string": "Hyderabad, Telangana"},
+    {"city": "Bangalore", "state": "Karnataka", "display_name": "Bangalore, Karnataka", "indeed_location_string": "Bangalore, Karnataka"},
+    {"city": "Chennai", "state": "Tamil Nadu", "display_name": "Chennai, Tamil Nadu", "indeed_location_string": "Chennai, Tamil Nadu"},
+    {"city": "Mumbai", "state": "Maharashtra", "display_name": "Mumbai, Maharashtra", "indeed_location_string": "Mumbai, Maharashtra"},
+    {"city": "Pune", "state": "Maharashtra", "display_name": "Pune, Maharashtra", "indeed_location_string": "Pune, Maharashtra"},
+    {"city": "Delhi NCR", "state": "Delhi", "display_name": "Delhi NCR", "indeed_location_string": "Delhi, Delhi"},
+    {"city": "Kolkata", "state": "West Bengal", "display_name": "Kolkata, West Bengal", "indeed_location_string": "Kolkata, West Bengal"},
+    {"city": "Ahmedabad", "state": "Gujarat", "display_name": "Ahmedabad, Gujarat", "indeed_location_string": "Ahmedabad, Gujarat"},
+    {"city": "Kochi", "state": "Kerala", "display_name": "Kochi, Kerala", "indeed_location_string": "Kochi, Kerala"},
+    {"city": "Jaipur", "state": "Rajasthan", "display_name": "Jaipur, Rajasthan", "indeed_location_string": "Jaipur, Rajasthan"},
+    {"city": "Chandigarh", "state": "Chandigarh", "display_name": "Chandigarh", "indeed_location_string": "Chandigarh, Chandigarh"},
+    {"city": "Indore", "state": "Madhya Pradesh", "display_name": "Indore, Madhya Pradesh", "indeed_location_string": "Indore, Madhya Pradesh"},
+    {"city": "Coimbatore", "state": "Tamil Nadu", "display_name": "Coimbatore, Tamil Nadu", "indeed_location_string": "Coimbatore, Tamil Nadu"},
+    {"city": "Visakhapatnam", "state": "Andhra Pradesh", "display_name": "Visakhapatnam, Andhra Pradesh", "indeed_location_string": "Visakhapatnam, Andhra Pradesh"},
+    {"city": "Remote", "state": "India", "display_name": "Remote India", "indeed_location_string": "India"}
+  ]
+}
