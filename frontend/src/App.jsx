@@ -13,6 +13,7 @@ import {
 
 const DEFAULT_FILTERS = {
   keyword: "",
+  company: "",
   role: "",
   location: "",
   experience: "",

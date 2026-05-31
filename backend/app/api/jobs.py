@@ -25,6 +25,7 @@ def list_jobs(
     location: str | None = Query(None),
     experience: str | None = Query(None),
     keyword: str | None = Query(None),
+    company: str | None = Query(None, description="Filter by company name"),
     site: str | None = Query(None),
     is_remote: bool | None = Query(None),
     page: int = Query(1, ge=1),
@@ -60,8 +61,11 @@ def list_jobs(
         query = query.filter(
             Job.title.ilike(pattern)
             | Job.description.ilike(pattern)
-            | Job.company_name.ilike(pattern)
+            | Job.key_skills.ilike(pattern)
         )
+
+    if company:
+        query = query.filter(Job.company_name.ilike(f"%{company.strip()}%"))
 
     if site:
         query = query.filter(Job.site == site.lower())

@@ -2,7 +2,7 @@ export default function JobFilters({ filters, meta, onChange, onSearch, loading 
   return (
     <section className="filters-panel">
       <h2>Find your next role</h2>
-      <p className="filters-sub">Search jobs across India — filter by role, city, and experience.</p>
+      <p className="filters-sub">Search jobs across India — filter by role, city, company, and experience.</p>
 
       <div className="filters-grid">
         <label>
@@ -12,6 +12,17 @@ export default function JobFilters({ filters, meta, onChange, onSearch, loading 
             placeholder="e.g. data analyst, Python, fresher"
             value={filters.keyword}
             onChange={(e) => onChange("keyword", e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onSearch()}
+          />
+        </label>
+
+        <label>
+          Company
+          <input
+            type="text"
+            placeholder="e.g. Wipro, Google, TCS"
+            value={filters.company}
+            onChange={(e) => onChange("company", e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSearch()}
           />
         </label>
