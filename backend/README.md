@@ -79,10 +79,14 @@ curl -X POST "https://YOUR-API.railway.app/api/v1/admin/scrape/run?limit=1" \
 | GET | `/api/v1/dashboard/stats` | Job health metrics (ops UI) |
 | POST | `/api/v1/dashboard/refresh` | Background scrape (requires `X-Admin-Key`) |
 | GET | `/api/v1/dashboard/refresh/status` | Scrape in-progress status |
+| GET | `/api/v1/jobs?bucket=tagged\|others` | Student browse: fully tagged vs review queue |
+| POST | `/api/v1/admin/jobs/retag` | Recompute tags on existing jobs |
+
+After deploy, run migration `alembic upgrade head`, then `POST /api/v1/admin/jobs/retag` once to tag existing rows.
 
 ## Seed data
 
 On startup the API seeds:
 - 12 role categories with keywords
 - 15 India locations
-- 180 search profiles (12 roles × 15 cities)
+- 1080 search profiles (12 roles × 15 cities × 6 experience levels)

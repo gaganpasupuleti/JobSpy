@@ -26,6 +26,8 @@ class JobListOut(BaseModel):
     role_category_id: int | None
     location_id: int | None
     experience_band_id: int | None
+    tag_status: str | None = None
+    needs_review: bool = False
     scraped_at: datetime
 
 

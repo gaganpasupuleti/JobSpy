@@ -27,6 +27,12 @@ export default function Header({ tab, onTabChange, savedCount, apiStatus, varian
                 Browse jobs
               </button>
               <button
+                className={tab === "others" ? "nav-active" : ""}
+                onClick={() => onTabChange("others")}
+              >
+                Others
+              </button>
+              <button
                 className={tab === "saved" ? "nav-active" : ""}
                 onClick={() => onTabChange("saved")}
               >

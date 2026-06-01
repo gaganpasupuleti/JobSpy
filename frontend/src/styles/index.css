@@ -346,6 +346,19 @@ body {
   font-weight: 500;
 }
 
+.tag-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+
+.tag-partial { background: #fff8e6; color: #9a6700; }
+.tag-untagged { background: var(--bg); color: var(--ink-muted); }
+.tag-flagged { background: #fef2f2; color: var(--error); }
+
 .save-btn {
   margin-left: auto;
   background: transparent;
@@ -853,6 +866,14 @@ body {
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: flex-end;
+}
+
+.dash-full-scrape {
+  flex: 1 1 100%;
+  max-width: 100%;
+  padding-top: 0 !important;
+  font-size: 0.9rem;
+  color: var(--ink);
 }
 
 .dash-refresh-actions label {

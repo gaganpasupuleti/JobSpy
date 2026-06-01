@@ -19,19 +19,39 @@ def run_scrape_batch(limit: int) -> None:
             .limit(limit)
             .all()
         )
-        for i, profile in enumerate(profiles):
-            run_profile_scrape(db, profile)
-            if i < len(profiles) - 1:
-                time.sleep(settings.scrape_sleep_seconds)
+        _scrape_profiles(db, profiles)
     finally:
         db.close()
 
 
-def queue_profiles_for_batch(db: Session, limit: int) -> list[SearchProfile]:
-    return (
-        db.query(SearchProfile)
-        .filter(SearchProfile.is_active.is_(True))
-        .order_by(SearchProfile.last_scraped_at.asc().nullsfirst())
-        .limit(limit)
-        .all()
-    )
+def run_full_scrape() -> dict:
+    """Scrape all active profiles (12 roles × 15 cities × 6 levels = 1080)."""
+    db = SessionLocal()
+    try:
+        profiles = (
+            db.query(SearchProfile)
+            .filter(SearchProfile.is_active.is_(True))
+            .order_by(SearchProfile.last_scraped_at.asc().nullsfirst())
+            .all()
+        )
+        return _scrape_profiles(db, profiles)
+    finally:
+        db.close()
+
+
+def _scrape_profiles(db: Session, profiles: list[SearchProfile]) -> dict:
+    success = 0
+    failed = 0
+    for i, profile in enumerate(profiles):
+        run = run_profile_scrape(db, profile)
+        if run.status == "success":
+            success += 1
+        else:
+            failed += 1
+        if i < len(profiles) - 1:
+            time.sleep(settings.scrape_sleep_seconds)
+    return {
+        "profiles_total": len(profiles),
+        "profiles_success": success,
+        "profiles_failed": failed,
+    }

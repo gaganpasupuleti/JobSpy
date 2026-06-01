@@ -5,6 +5,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.db.models import Application, ExperienceBand, Job, Location, RoleCategory, SavedJob
+from app.services.job_tagger import TagStatus
 from app.db.session import get_db
 from app.schemas.jobs import (
     ApplyRequest,
@@ -28,11 +29,29 @@ def list_jobs(
     company: str | None = Query(None, description="Filter by company name"),
     site: str | None = Query(None),
     is_remote: bool | None = Query(None),
+    bucket: str = Query(
+        "tagged",
+        description="tagged = India+role+level complete; others = partial/untagged/flagged",
+    ),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
     query = db.query(Job).filter(Job.is_active.is_(True))
+
+    if bucket == "tagged":
+        query = query.filter(Job.tag_status == TagStatus.COMPLETE)
+    elif bucket == "others":
+        query = query.filter(
+            Job.tag_status.in_(
+                [TagStatus.PARTIAL, TagStatus.UNTAGGED, TagStatus.FLAGGED]
+            )
+        )
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="bucket must be 'tagged' or 'others'",
+        )
 
     if role:
         category = db.query(RoleCategory).filter(RoleCategory.slug == role).first()

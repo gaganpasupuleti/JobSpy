@@ -17,6 +17,14 @@ class JobsSummary(BaseModel):
     total: int
 
 
+class JobsTagSummary(BaseModel):
+    complete: int
+    partial: int
+    untagged: int
+    flagged: int
+    non_india: int
+
+
 class SearchProfilesSummary(BaseModel):
     total_active: int
     never_scraped: int
@@ -28,6 +36,7 @@ class DashboardStatsOut(BaseModel):
     last_successful_scrape_at: datetime | None
     scrape_in_progress: bool
     jobs: JobsSummary
+    jobs_by_tag: JobsTagSummary
     by_site: list[CountByLabel]
     by_role: list[CountByLabel]
     by_experience: list[CountByLabel]

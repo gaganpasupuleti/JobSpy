@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import verify_admin_key
 from app.db.models import Job
 from app.db.session import get_db
+from app.services.ingest import retag_job
 from app.services.skills import extract_key_skills
 from app.services.link_verify import verify_job_links
 
@@ -98,6 +99,19 @@ def backfill_skills(
             updated += 1
     db.commit()
     return {"processed": len(jobs), "updated": updated}
+
+
+@router.post("/retag")
+def retag_jobs(
+    limit: int = Query(2000, ge=1, le=10000),
+    db: Session = Depends(get_db),
+):
+    """Recompute India / role / level tags for existing jobs."""
+    jobs = db.query(Job).filter(Job.is_active.is_(True)).limit(limit).all()
+    for job in jobs:
+        retag_job(db, job)
+    db.commit()
+    return {"processed": len(jobs)}
 
 
 @router.post("/verify-links")

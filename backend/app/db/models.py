@@ -39,7 +39,9 @@ class RoleCategory(Base):
 
     keywords: Mapped[list["Keyword"]] = relationship(back_populates="role_category")
     search_profiles: Mapped[list["SearchProfile"]] = relationship(back_populates="role_category")
-    jobs: Mapped[list["Job"]] = relationship(back_populates="role_category")
+    jobs: Mapped[list["Job"]] = relationship(
+        back_populates="role_category", foreign_keys="Job.role_category_id"
+    )
 
 
 class Keyword(Base):
@@ -167,6 +169,14 @@ class Job(Base):
     )
     last_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_india_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    tag_status: Mapped[str] = mapped_column(String(32), default="untagged", index=True)
+    needs_review: Mapped[bool] = mapped_column(Boolean, default=False)
+    review_reason: Mapped[str | None] = mapped_column(String(256))
+    role_match_score: Mapped[float | None] = mapped_column(Float)
+    profile_role_category_id: Mapped[int | None] = mapped_column(
+        ForeignKey("role_categories.id")
+    )
 
     role_category_id: Mapped[int | None] = mapped_column(ForeignKey("role_categories.id"))
     location_id: Mapped[int | None] = mapped_column(ForeignKey("locations.id"))
@@ -174,7 +184,12 @@ class Job(Base):
     search_profile_id: Mapped[int | None] = mapped_column(ForeignKey("search_profiles.id"))
     scrape_run_id: Mapped[int | None] = mapped_column(ForeignKey("scrape_runs.id"))
 
-    role_category: Mapped["RoleCategory | None"] = relationship(back_populates="jobs")
+    role_category: Mapped["RoleCategory | None"] = relationship(
+        back_populates="jobs", foreign_keys=[role_category_id]
+    )
+    profile_role_category: Mapped["RoleCategory | None"] = relationship(
+        foreign_keys=[profile_role_category_id]
+    )
     location: Mapped["Location | None"] = relationship(back_populates="jobs")
     experience_band: Mapped["ExperienceBand | None"] = relationship(back_populates="jobs")
     search_profile: Mapped["SearchProfile | None"] = relationship(back_populates="jobs")

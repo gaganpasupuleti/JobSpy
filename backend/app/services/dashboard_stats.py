@@ -5,10 +5,12 @@ from sqlalchemy.orm import Session
 
 from app.db.models import ExperienceBand, Job, RoleCategory, ScrapeRun, ScrapeStatus, SearchProfile
 from app.schemas.admin import ScrapeRunOut
+from app.services.job_tagger import TagStatus
 from app.schemas.dashboard import (
     CountByLabel,
     DashboardStatsOut,
     JobsSummary,
+    JobsTagSummary,
     SearchProfilesSummary,
 )
 
@@ -123,11 +125,28 @@ def get_dashboard_stats(db: Session) -> DashboardStatsOut:
     if unassigned_role:
         by_role.append(CountByLabel(label="Unassigned", slug=None, count=unassigned_role))
 
+    def _tag_count(status: str) -> int:
+        return (
+            db.query(func.count(Job.id))
+            .filter(Job.is_active.is_(True), Job.tag_status == status)
+            .scalar()
+            or 0
+        )
+
+    jobs_by_tag = JobsTagSummary(
+        complete=_tag_count(TagStatus.COMPLETE),
+        partial=_tag_count(TagStatus.PARTIAL),
+        untagged=_tag_count(TagStatus.UNTAGGED),
+        flagged=_tag_count(TagStatus.FLAGGED),
+        non_india=_tag_count(TagStatus.NON_INDIA),
+    )
+
     return DashboardStatsOut(
         last_job_scraped_at=last_job_scraped_at,
         last_successful_scrape_at=last_success.finished_at if last_success else None,
         scrape_in_progress=is_scrape_in_progress(db),
         jobs=JobsSummary(live=live, inactive=inactive, total=live + inactive),
+        jobs_by_tag=jobs_by_tag,
         by_site=[CountByLabel(label=site, slug=site, count=count) for site, count in by_site_rows],
         by_role=by_role,
         by_experience=by_experience,

@@ -10,6 +10,9 @@ from sqlalchemy.orm import Session
 
 from app.db.models import ExperienceBand, Job, JobKeyword, Keyword, RoleCategory, SearchProfile
 from app.services.experience import infer_experience
+from app.services.geo_india import verify_india_job
+from app.services.job_tagger import TagStatus, apply_tag_status
+from app.services.role_classifier import classify_role
 from app.services.skills import extract_key_skills
 
 
@@ -86,6 +89,22 @@ def tag_job_keywords(db: Session, job: Job, role_category_id: int) -> None:
                 db.add(JobKeyword(job_id=job.id, keyword_id=kw.id))
 
 
+def _resolve_experience_band_id(
+    db: Session,
+    *,
+    title: str | None,
+    description: str | None,
+    profile: SearchProfile,
+    experience_bands: dict[str, int],
+) -> int | None:
+    inference = infer_experience(title, description)
+    if inference.slug and inference.slug in experience_bands:
+        return experience_bands[inference.slug]
+    if profile.experience_band_id:
+        return profile.experience_band_id
+    return None
+
+
 def upsert_jobs_from_dataframe(
     db: Session,
     df: pd.DataFrame,
@@ -105,18 +124,48 @@ def upsert_jobs_from_dataframe(
             continue
 
         external_id = extract_external_id(site, job_url, _safe_str(row.get("id")))
-        inference = infer_experience(
-            _safe_str(row.get("title")),
-            _safe_str(row.get("description")),
-        )
-
+        title = _safe_str(row.get("title"))
+        description = _safe_str(row.get("description"))
         location_display = _safe_str(row.get("location"))
         city, state = _split_location(location_display)
-        description = _safe_str(row.get("description"))
+        is_remote = _safe_bool(row.get("is_remote"))
+
+        is_india_verified = verify_india_job(
+            country="India",
+            location_display=location_display,
+            city=city,
+            state=state,
+            is_remote=is_remote,
+        )
+
+        classification = classify_role(
+            db,
+            title=title,
+            description=description,
+            profile_role_category_id=profile.role_category_id,
+        )
+
+        needs_review = False
+        review_reason = None
+        if classification.profile_mismatch:
+            needs_review = True
+            review_reason = "role_profile_mismatch"
+        elif classification.role_category_id is None:
+            needs_review = True
+            review_reason = "low_role_confidence"
+
+        experience_band_id = _resolve_experience_band_id(
+            db,
+            title=title,
+            description=description,
+            profile=profile,
+            experience_bands=experience_bands,
+        )
+
         key_skills = extract_key_skills(
             description=description,
             raw_skills=_safe_str(row.get("skills")),
-            title=_safe_str(row.get("title")),
+            title=title,
         )
 
         existing = (
@@ -125,10 +174,12 @@ def upsert_jobs_from_dataframe(
             .first()
         )
 
+        inference = infer_experience(title, description)
+
         payload = dict(
             site=site,
             external_id=external_id,
-            title=_safe_str(row.get("title")) or "Untitled",
+            title=title or "Untitled",
             company_name=_safe_str(row.get("company")),
             company_url=_safe_str(row.get("company_url")),
             job_url=job_url,
@@ -140,7 +191,7 @@ def upsert_jobs_from_dataframe(
             state=state,
             country="India",
             location_display=location_display,
-            is_remote=_safe_bool(row.get("is_remote")),
+            is_remote=is_remote,
             job_type=_safe_str(row.get("job_type")),
             job_level=_safe_str(row.get("job_level")),
             job_function=_safe_str(row.get("job_function")),
@@ -153,12 +204,17 @@ def upsert_jobs_from_dataframe(
             date_posted=_parse_date(row.get("date_posted")),
             experience_years_min=inference.years_min,
             experience_years_max=inference.years_max,
-            experience_band_id=experience_bands.get(inference.slug) if inference.slug else None,
-            role_category_id=profile.role_category_id,
+            experience_band_id=experience_band_id,
+            role_category_id=classification.role_category_id,
+            profile_role_category_id=profile.role_category_id,
+            role_match_score=float(classification.score),
             location_id=profile.location_id,
             search_profile_id=profile.id,
             scrape_run_id=scrape_run_id,
             is_active=True,
+            is_india_verified=is_india_verified,
+            needs_review=needs_review,
+            review_reason=review_reason,
             last_verified_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
@@ -172,11 +228,50 @@ def upsert_jobs_from_dataframe(
             db.add(job)
             db.flush()
 
-        tag_job_keywords(db, job, profile.role_category_id)
+        apply_tag_status(job)
+        if job.role_category_id:
+            tag_job_keywords(db, job, job.role_category_id)
         upserted += 1
 
     db.commit()
     return upserted
+
+
+def retag_job(db: Session, job: Job) -> None:
+    """Recompute tags for an existing job (e.g. after rule changes)."""
+    classification = classify_role(
+        db,
+        title=job.title,
+        description=job.description,
+        profile_role_category_id=job.profile_role_category_id or job.role_category_id,
+    )
+    experience_bands = {b.slug: b.id for b in db.query(ExperienceBand).all()}
+    inference = infer_experience(job.title, job.description)
+
+    job.is_india_verified = verify_india_job(
+        country=job.country,
+        location_display=job.location_display,
+        city=job.city,
+        state=job.state,
+        is_remote=job.is_remote,
+    )
+
+    job.role_category_id = classification.role_category_id
+    job.role_match_score = float(classification.score)
+    job.needs_review = False
+    job.review_reason = None
+
+    if classification.profile_mismatch:
+        job.needs_review = True
+        job.review_reason = "role_profile_mismatch"
+    elif classification.role_category_id is None:
+        job.needs_review = True
+        job.review_reason = "low_role_confidence"
+
+    if inference.slug and inference.slug in experience_bands:
+        job.experience_band_id = experience_bands[inference.slug]
+
+    apply_tag_status(job)
 
 
 def _split_location(location: str | None) -> tuple[str | None, str | None]:

@@ -45,6 +45,7 @@ export default function DashboardPage() {
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState("loading");
   const [refreshLimit, setRefreshLimit] = useState(5);
+  const [fullScrape, setFullScrape] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState(null);
   const [adminKeyInput, setAdminKeyInput] = useState(
@@ -105,7 +106,7 @@ export default function DashboardPage() {
     setRefreshMessage(null);
     setError(null);
     try {
-      const res = await api.triggerDashboardRefresh(refreshLimit, key);
+      const res = await api.triggerDashboardRefresh(refreshLimit, key, fullScrape);
       setRefreshMessage(res.message);
       await loadStats();
     } catch (e) {
@@ -172,11 +173,32 @@ export default function DashboardPage() {
 
         <section className="dash-cards">
           <article className="dash-card dash-card-live">
+            <span className="dash-card-label">Fully tagged</span>
+            <strong className="dash-card-value">
+              {(stats?.jobs_by_tag?.complete ?? 0).toLocaleString("en-IN")}
+            </strong>
+            <span className="dash-card-hint">Browse tab (India + role + level)</span>
+          </article>
+          <article className="dash-card">
+            <span className="dash-card-label">Others queue</span>
+            <strong className="dash-card-value">
+              {(
+                (stats?.jobs_by_tag?.partial ?? 0) +
+                (stats?.jobs_by_tag?.untagged ?? 0) +
+                (stats?.jobs_by_tag?.flagged ?? 0)
+              ).toLocaleString("en-IN")}
+            </strong>
+            <span className="dash-card-hint">
+              Partial {stats?.jobs_by_tag?.partial ?? 0} · Flagged{" "}
+              {stats?.jobs_by_tag?.flagged ?? 0}
+            </span>
+          </article>
+          <article className="dash-card dash-card-live">
             <span className="dash-card-label">Live jobs</span>
             <strong className="dash-card-value">
               {(stats?.jobs.live ?? 0).toLocaleString("en-IN")}
             </strong>
-            <span className="dash-card-hint">Visible to students</span>
+            <span className="dash-card-hint">All active in database</span>
           </article>
           <article className="dash-card">
             <span className="dash-card-label">Inactive</span>
@@ -239,20 +261,31 @@ export default function DashboardPage() {
           )}
 
           <div className="dash-refresh-actions">
-            <label>
-              Profiles per run
-              <select
-                value={refreshLimit}
-                onChange={(e) => setRefreshLimit(Number(e.target.value))}
+            <label className="checkbox-label dash-full-scrape">
+              <input
+                type="checkbox"
+                checked={fullScrape}
+                onChange={(e) => setFullScrape(e.target.checked)}
                 disabled={refreshing || stats?.scrape_in_progress}
-              >
-                {[1, 3, 5, 10, 15, 20].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+              />
+              Full India sync (~1080 profiles: all roles × cities × levels)
             </label>
+            {!fullScrape && (
+              <label>
+                Profiles per run
+                <select
+                  value={refreshLimit}
+                  onChange={(e) => setRefreshLimit(Number(e.target.value))}
+                  disabled={refreshing || stats?.scrape_in_progress}
+                >
+                  {[1, 3, 5, 10, 15, 20].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <button
               type="button"
               className="btn primary"
@@ -263,7 +296,9 @@ export default function DashboardPage() {
                 ? "Starting…"
                 : stats?.scrape_in_progress
                   ? "Scrape running…"
-                  : "Refresh jobs now"}
+                  : fullScrape
+                    ? "Start full sync"
+                    : "Refresh jobs now"}
             </button>
             <button type="button" className="btn ghost" onClick={loadStats} disabled={loading}>
               Reload stats

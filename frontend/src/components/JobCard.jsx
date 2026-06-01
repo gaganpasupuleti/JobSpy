@@ -12,6 +12,11 @@ export default function JobCard({ job, roles, bands, saved, onSelect, onSave, on
       <div className="job-card-top">
         <span className={`site-badge site-${job.site}`}>{siteLabel(job.site)}</span>
         {job.is_remote && <span className="remote-badge">Remote</span>}
+        {job.tag_status && job.tag_status !== "complete" && (
+          <span className={`tag-badge tag-${job.tag_status}`}>
+            {job.needs_review ? "Review" : job.tag_status}
+          </span>
+        )}
         <button
           className={`save-btn ${saved ? "saved" : ""}`}
           title={saved ? "Remove from saved" : "Save job"}

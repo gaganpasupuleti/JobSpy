@@ -46,6 +46,7 @@ export const api = {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== "" && v !== null && v !== undefined) qs.set(k, v);
     });
+    if (!qs.has("bucket")) qs.set("bucket", "tagged");
     return request(`/api/v1/jobs?${qs}`);
   },
   getJob: (id) => request(`/api/v1/jobs/${id}`),
@@ -61,8 +62,8 @@ export const api = {
     }),
   getDashboardStats: () => request("/api/v1/dashboard/stats"),
   getDashboardRefreshStatus: () => request("/api/v1/dashboard/refresh/status"),
-  triggerDashboardRefresh: (limit, adminKey) =>
-    request(`/api/v1/dashboard/refresh?limit=${limit}`, {
+  triggerDashboardRefresh: (limit, adminKey, full = false) =>
+    request(`/api/v1/dashboard/refresh?limit=${limit}&full=${full}`, {
       method: "POST",
       headers: { "X-Admin-Key": adminKey },
     }),

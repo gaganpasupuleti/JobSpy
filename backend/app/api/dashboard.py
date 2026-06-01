@@ -12,7 +12,7 @@ from app.schemas.dashboard import (
     DashboardStatsOut,
 )
 from app.services.dashboard_stats import get_dashboard_stats, is_scrape_in_progress
-from app.services.scrape_batch import run_scrape_batch
+from app.services.scrape_batch import run_full_scrape, run_scrape_batch
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -53,6 +53,7 @@ def refresh_status(db: Session = Depends(get_db)):
 def trigger_refresh(
     background_tasks: BackgroundTasks,
     limit: int = Query(5, ge=1, le=50),
+    full: bool = Query(False, description="Scrape all active profiles (~1080)"),
     db: Session = Depends(get_db),
 ):
     """Start a background scrape pass (requires X-Admin-Key)."""
@@ -60,6 +61,13 @@ def trigger_refresh(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A scrape is already in progress. Wait for it to finish.",
+        )
+
+    if full:
+        background_tasks.add_task(run_full_scrape)
+        return DashboardRefreshOut(
+            message="Full India scrape started (all roles × cities × levels)",
+            profiles_queued=1080,
         )
 
     background_tasks.add_task(run_scrape_batch, limit)

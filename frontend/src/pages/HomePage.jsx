@@ -57,11 +57,11 @@ export default function HomePage() {
     loadMeta();
   }, []);
 
-  const fetchJobs = useCallback(async (f = filters) => {
+  const fetchJobs = useCallback(async (f = filters, jobBucket = "tagged") => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getJobs(f);
+      const data = await api.getJobs({ ...f, bucket: jobBucket });
       setJobs(data.items);
       setTotal(data.total);
     } catch (e) {
@@ -74,8 +74,9 @@ export default function HomePage() {
   }, [filters]);
 
   useEffect(() => {
-    if (apiStatus === "ok" && tab === "browse") fetchJobs();
-  }, [apiStatus, tab]);
+    if (apiStatus !== "ok" || (tab !== "browse" && tab !== "others")) return;
+    fetchJobs(filters, tab === "others" ? "others" : "tagged");
+  }, [apiStatus, tab, fetchJobs, filters]);
 
   const loadSavedJobs = useCallback(async () => {
     const ids = getSavedJobIds();
@@ -104,14 +105,18 @@ export default function HomePage() {
   function handleFilterChange(key, value) {
     if (key === "reset") {
       setFilters(DEFAULT_FILTERS);
-      fetchJobs(DEFAULT_FILTERS);
+      fetchJobs(DEFAULT_FILTERS, tab === "others" ? "others" : "tagged");
       return;
     }
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   }
 
   function handleSearch() {
-    fetchJobs({ ...filters, page: 1 });
+    fetchJobs({ ...filters, page: 1 }, tab === "others" ? "others" : "tagged");
+  }
+
+  function jobBucketForTab() {
+    return tab === "others" ? "others" : "tagged";
   }
 
   async function openJob(id) {
@@ -179,7 +184,17 @@ export default function HomePage() {
           </div>
         )}
 
-        {tab === "browse" && (
+        {tab === "others" && (
+          <section className="saved-header">
+            <h2>Others</h2>
+            <p>
+              Jobs that need review: missing tags, uncertain role, or flagged mismatch.
+              Fully tagged India jobs are under Browse.
+            </p>
+          </section>
+        )}
+
+        {(tab === "browse" || tab === "others") && (
           <>
             <JobFilters
               filters={filters}
@@ -200,6 +215,11 @@ export default function HomePage() {
                   </>
                 )}
               </p>
+              {tab === "browse" && (
+                <p className="dash-muted" style={{ margin: "0.35rem 0 0" }}>
+                  Fully tagged: India + role + experience level
+                </p>
+              )}
             </section>
           </>
         )}
@@ -211,18 +231,26 @@ export default function HomePage() {
           </section>
         )}
 
-        {(tab === "browse" ? loading : savedLoading) && displayJobs.length === 0 ? (
+        {(tab === "browse" || tab === "others" ? loading : savedLoading) && displayJobs.length === 0 ? (
           <div className="empty-state">
             <div className="spinner" />
             <p>Loading jobs…</p>
           </div>
         ) : displayJobs.length === 0 ? (
           <div className="empty-state">
-            <h3>{tab === "saved" ? "No saved jobs yet" : "No jobs found"}</h3>
+            <h3>
+              {tab === "saved"
+                ? "No saved jobs yet"
+                : tab === "others"
+                  ? "No jobs in Others"
+                  : "No jobs found"}
+            </h3>
             <p>
               {tab === "saved"
                 ? "Click ☆ Save on any job to bookmark it here."
-                : "Try different filters or run a scrape on the backend first."}
+                : tab === "others"
+                  ? "All scraped jobs are fully tagged, or run a scrape from the ops dashboard."
+                  : "Try different filters or run a scrape on the ops dashboard."}
             </p>
           </div>
         ) : (
@@ -242,7 +270,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {tab === "browse" && totalPages > 1 && (
+        {(tab === "browse" || tab === "others") && totalPages > 1 && (
           <div className="pagination">
             <button
               className="btn ghost"
@@ -250,7 +278,7 @@ export default function HomePage() {
               onClick={() => {
                 const next = { ...filters, page: filters.page - 1 };
                 setFilters(next);
-                fetchJobs(next);
+                fetchJobs(next, jobBucketForTab());
               }}
             >
               ← Previous
@@ -264,7 +292,7 @@ export default function HomePage() {
               onClick={() => {
                 const next = { ...filters, page: filters.page + 1 };
                 setFilters(next);
-                fetchJobs(next);
+                fetchJobs(next, jobBucketForTab());
               }}
             >
               Next →
