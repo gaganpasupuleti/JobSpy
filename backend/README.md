@@ -81,6 +81,8 @@ curl -X POST "https://YOUR-API.railway.app/api/v1/admin/scrape/run?limit=1" \
 | GET | `/api/v1/dashboard/refresh/status` | Scrape in-progress status |
 | GET | `/api/v1/jobs?bucket=tagged\|others` | Student browse: fully tagged vs review queue |
 | POST | `/api/v1/admin/jobs/retag` | Recompute tags on existing jobs |
+| GET | `/api/v1/admin/tagging/queue` | Jobs needing manual tags (admin key) |
+| PATCH | `/api/v1/admin/tagging/{id}` | Set role, level, India, approve |
 
 After deploy, run migration `alembic upgrade head`, then `POST /api/v1/admin/jobs/retag` once to tag existing rows.
 

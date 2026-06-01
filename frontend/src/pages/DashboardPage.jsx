@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api, getAdminKey, setAdminKey } from "../api/client";
 import Header from "../components/Header";
 import { formatDateTime, siteLabel } from "../utils/format";
@@ -223,6 +224,17 @@ export default function DashboardPage() {
               {stats?.search_profiles.scraped_last_24h ?? 0} in last 24h
             </span>
           </article>
+        </section>
+
+        <section className="dash-panel">
+          <h3>Internal tagging tool</h3>
+          <p className="dash-muted">
+            Manually fix role, experience level, and India tags for jobs in the Others queue.
+            Uses the same admin key.
+          </p>
+          <a href="/dashboard/tag" className="btn primary">
+            Open tagging tool →
+          </a>
         </section>
 
         <section className="dash-panel dash-refresh-panel">

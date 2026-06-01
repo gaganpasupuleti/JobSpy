@@ -42,9 +42,15 @@ export default function Header({ tab, onTabChange, savedCount, apiStatus, varian
           )}
           <Link
             to="/dashboard"
-            className={`header-link ${onDashboard ? "nav-active" : ""}`}
+            className={`header-link ${location.pathname === "/dashboard" ? "nav-active" : ""}`}
           >
             Ops dashboard
+          </Link>
+          <Link
+            to="/dashboard/tag"
+            className={`header-link ${location.pathname === "/dashboard/tag" ? "nav-active" : ""}`}
+          >
+            Tag jobs
           </Link>
           {onDashboard && (
             <Link to="/" className="header-link">

@@ -32,6 +32,9 @@ class JobListOut(BaseModel):
 
 
 class JobDetailOut(JobListOut):
+    review_reason: str | None = None
+    is_india_verified: bool = False
+    role_match_score: float | None = None
     description: str | None
     job_url_direct: str | None
     company_url: str | None

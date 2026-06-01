@@ -191,7 +191,9 @@ class Job(Base):
         foreign_keys=[profile_role_category_id]
     )
     location: Mapped["Location | None"] = relationship(back_populates="jobs")
-    experience_band: Mapped["ExperienceBand | None"] = relationship(back_populates="jobs")
+    experience_band: Mapped["ExperienceBand | None"] = relationship(
+        back_populates="jobs", foreign_keys=[experience_band_id]
+    )
     search_profile: Mapped["SearchProfile | None"] = relationship(back_populates="jobs")
     scrape_run: Mapped["ScrapeRun | None"] = relationship(back_populates="jobs")
     keyword_links: Mapped[list["JobKeyword"]] = relationship(
