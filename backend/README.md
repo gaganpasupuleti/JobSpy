@@ -76,6 +76,9 @@ curl -X POST "https://YOUR-API.railway.app/api/v1/admin/scrape/run?limit=1" \
 | GET | `/api/v1/meta/keywords?role=` | Keywords by role |
 | POST | `/api/v1/admin/scrape/run` | Trigger scrape (requires `X-Admin-Key`) |
 | GET | `/api/v1/admin/scrape/runs` | Scrape history |
+| GET | `/api/v1/dashboard/stats` | Job health metrics (ops UI) |
+| POST | `/api/v1/dashboard/refresh` | Background scrape (requires `X-Admin-Key`) |
+| GET | `/api/v1/dashboard/refresh/status` | Scrape in-progress status |
 
 ## Seed data
 

@@ -11,6 +11,7 @@ Student job portal UI for the JobSpy backend API.
 - **Save jobs** — bookmarks synced to backend + localStorage
 - **Saved jobs tab** — view all bookmarked roles
 - **API status** indicator in header
+- **Ops dashboard** at `/dashboard` — live/inactive job counts, breakdowns, last updated, manual scrape refresh
 
 ## Quick start
 
@@ -47,3 +48,13 @@ Deploy the `dist/` folder to Vercel, Netlify, or Railway static hosting.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `VITE_API_URL` | `""` (uses proxy in dev) | Backend API base URL |
+| `VITE_ADMIN_API_KEY` | (optional) | Same as backend `ADMIN_API_KEY` for dashboard refresh button |
+
+## Ops dashboard
+
+Open **http://localhost:5173/dashboard** (or `/dashboard` on your deployed site).
+
+- Shows when data was last updated
+- Live vs inactive job counts, breakdown by site / role / experience / job level
+- **Refresh jobs now** runs a background scrape immediately (no cron needed)
+- Requires admin key via `VITE_ADMIN_API_KEY` or one-time paste in the UI

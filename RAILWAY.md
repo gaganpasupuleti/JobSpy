@@ -9,6 +9,7 @@ One Railway service serves everything at one URL:
 | Path | What |
 |------|------|
 | `/` | Student job board (React UI) |
+| `/dashboard` | Ops dashboard (job health + manual refresh) |
 | `/health` | API health check |
 | `/docs` | Swagger API docs |
 | `/api/v1/*` | REST API |

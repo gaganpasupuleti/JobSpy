@@ -19,6 +19,17 @@ export function formatDate(d) {
   });
 }
 
+export function formatDateTime(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function siteLabel(site) {
   const labels = {
     indeed: "Indeed",
