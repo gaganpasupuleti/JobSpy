@@ -67,4 +67,23 @@ export const api = {
       method: "POST",
       headers: { "X-Admin-Key": adminKey },
     }),
+  getTaggingQueue: (params, adminKey) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") qs.set(k, v);
+    });
+    return request(`/api/v1/admin/tagging/queue?${qs}`, {
+      headers: { "X-Admin-Key": adminKey },
+    });
+  },
+  getTaggingJob: (id, adminKey) =>
+    request(`/api/v1/admin/tagging/${id}`, {
+      headers: { "X-Admin-Key": adminKey },
+    }),
+  updateJobTags: (id, body, adminKey) =>
+    request(`/api/v1/admin/tagging/${id}`, {
+      method: "PATCH",
+      headers: { "X-Admin-Key": adminKey },
+      body: JSON.stringify(body),
+    }),
 };
