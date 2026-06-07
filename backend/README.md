@@ -40,6 +40,16 @@ FastAPI + PostgreSQL job board backend that scrapes India job listings via JobSp
 
 API docs: http://localhost:8000/docs
 
+### Test student logins
+
+| Email | Password |
+|-------|----------|
+| `student@jobboard.test` | `Student123!` |
+| `demo@jobboard.test` | `Demo123!` |
+| `priya@jobboard.test` | `Priya123!` |
+
+Sign in at `/login`. Accounts are seeded on API startup. Set `AUTH_SECRET` in production.
+
 ## Railway deployment
 
 Create a new Railway project with three components:

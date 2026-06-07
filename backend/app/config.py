@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql://postgres:postgres@localhost:5432/jobboard"
     admin_api_key: str = "change-me-in-production"
+    auth_secret: str = "change-me-auth-secret"
     cors_origins: str = "*"
     scrape_sleep_seconds: int = 45
     default_results_wanted: int = 20

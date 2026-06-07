@@ -10,6 +10,10 @@ export function setAdminKey(key) {
   else sessionStorage.removeItem(ADMIN_KEY_STORAGE);
 }
 
+function authHeaders(token) {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
     headers: {
@@ -36,6 +40,14 @@ async function request(path, options = {}) {
 
 export const api = {
   health: () => request("/health"),
+  getTestAccounts: () => request("/api/v1/auth/test-accounts"),
+  login: (email, password) =>
+    request("/api/v1/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  getMe: (token) =>
+    request("/api/v1/auth/me", { headers: authHeaders(token) }),
   getRoles: () => request("/api/v1/meta/roles"),
   getLocations: () => request("/api/v1/meta/locations"),
   getExperienceBands: () => request("/api/v1/meta/experience-bands"),
@@ -50,14 +62,16 @@ export const api = {
     return request(`/api/v1/jobs?${qs}`);
   },
   getJob: (id) => request(`/api/v1/jobs/${id}`),
-  applyToJob: (id, sessionId) =>
+  applyToJob: (id, sessionId, token = "") =>
     request(`/api/v1/jobs/${id}/apply`, {
       method: "POST",
+      headers: authHeaders(token),
       body: JSON.stringify({ session_id: sessionId }),
     }),
-  saveJob: (id, sessionId) =>
+  saveJob: (id, sessionId, token = "") =>
     request(`/api/v1/jobs/${id}/save`, {
       method: "POST",
+      headers: authHeaders(token),
       body: JSON.stringify({ session_id: sessionId }),
     }),
   getDashboardStats: () => request("/api/v1/dashboard/stats"),

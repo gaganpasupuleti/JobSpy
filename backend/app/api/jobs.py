@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
-from app.db.models import Application, ExperienceBand, Job, Location, RoleCategory, SavedJob
+from app.api.deps import get_optional_student
+from app.db.models import Application, ExperienceBand, Job, Location, RoleCategory, SavedJob, Student
 from app.services.job_tagger import TagStatus
 from app.db.session import get_db
 from app.schemas.jobs import (
@@ -117,14 +118,19 @@ def get_job(job_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.post("/{job_id}/apply", response_model=ApplyResponse)
-def apply_to_job(job_id: UUID, body: ApplyRequest, db: Session = Depends(get_db)):
+def apply_to_job(
+    job_id: UUID,
+    body: ApplyRequest,
+    db: Session = Depends(get_db),
+    student: Student | None = Depends(get_optional_student),
+):
     job = db.query(Job).filter(Job.id == job_id, Job.is_active.is_(True)).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
     application = Application(
         job_id=job.id,
-        student_id=body.student_id,
+        student_id=student.id if student else body.student_id,
         session_id=body.session_id,
         source="web",
     )
@@ -137,20 +143,36 @@ def apply_to_job(job_id: UUID, body: ApplyRequest, db: Session = Depends(get_db)
 
 
 @router.post("/{job_id}/save", response_model=SaveJobResponse)
-def save_job(job_id: UUID, body: SaveJobRequest, db: Session = Depends(get_db)):
+def save_job(
+    job_id: UUID,
+    body: SaveJobRequest,
+    db: Session = Depends(get_db),
+    student: Student | None = Depends(get_optional_student),
+):
     job = db.query(Job).filter(Job.id == job_id, Job.is_active.is_(True)).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    existing = (
-        db.query(SavedJob)
-        .filter(SavedJob.session_id == body.session_id, SavedJob.job_id == job.id)
-        .first()
-    )
+    if student:
+        existing = (
+            db.query(SavedJob)
+            .filter(SavedJob.student_id == student.id, SavedJob.job_id == job.id)
+            .first()
+        )
+    else:
+        existing = (
+            db.query(SavedJob)
+            .filter(SavedJob.session_id == body.session_id, SavedJob.job_id == job.id)
+            .first()
+        )
     if existing:
         return SaveJobResponse(saved=True, saved_job_id=existing.id)
 
-    saved = SavedJob(session_id=body.session_id, job_id=job.id)
+    saved = SavedJob(
+        session_id=body.session_id,
+        student_id=student.id if student else None,
+        job_id=job.id,
+    )
     db.add(saved)
     db.commit()
     db.refresh(saved)

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db.models import ExperienceBand, Keyword, Location, RoleCategory, SearchProfile
 from app.seed.search_terms import build_profile_search_term
+from app.seed.test_users import seed_test_students
 
 SEED_DIR = Path(__file__).parent
 
@@ -19,6 +20,7 @@ def seed_database(db: Session) -> dict:
     locations_created = _seed_locations(db, locations_data["locations"])
     profiles_created = _seed_search_profiles(db, roles_data["role_categories"])
     legacy_deactivated = _deactivate_legacy_profiles(db)
+    test_students_created = seed_test_students(db)
 
     db.commit()
     return {
@@ -27,6 +29,7 @@ def seed_database(db: Session) -> dict:
         "locations": locations_created,
         "search_profiles": profiles_created,
         "legacy_profiles_deactivated": legacy_deactivated,
+        "test_students": test_students_created,
     }
 
 

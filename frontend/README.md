@@ -12,6 +12,7 @@ Student job portal UI for the JobSpy backend API.
 - **Saved jobs tab** — view all bookmarked roles
 - **API status** indicator in header
 - **Ops dashboard** at `/dashboard` — live/inactive job counts, breakdowns, last updated, manual scrape refresh
+- **Email/password sign-in** at `/login` — test accounts (no Google OAuth)
 
 ## Quick start
 
@@ -49,6 +50,18 @@ Deploy the `dist/` folder to Vercel, Netlify, or Railway static hosting.
 |----------|---------|-------------|
 | `VITE_API_URL` | `""` (uses proxy in dev) | Backend API base URL |
 | `VITE_ADMIN_API_KEY` | (optional) | Same as backend `ADMIN_API_KEY` for dashboard refresh button |
+
+## Test logins (students)
+
+Open **/login** or click **Sign in**. Seeded accounts:
+
+| Email | Password |
+|-------|----------|
+| `student@jobboard.test` | `Student123!` |
+| `demo@jobboard.test` | `Demo123!` |
+| `priya@jobboard.test` | `Priya123!` |
+
+Browse works without signing in; sign-in links save/apply actions to your student account.
 
 ## Ops dashboard
 

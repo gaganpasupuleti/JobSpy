@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin, admin_jobs, dashboard, jobs, meta, tagging
+from app.api import admin, admin_jobs, auth, dashboard, jobs, meta, tagging
 from app.config import settings
 from app.db.session import SessionLocal
 from app.seed.seed import seed_database
@@ -39,6 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/api/v1")
 app.include_router(jobs.router, prefix="/api/v1")
 app.include_router(meta.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")

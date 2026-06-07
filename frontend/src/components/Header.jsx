@@ -1,6 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 
-export default function Header({ tab, onTabChange, savedCount, apiStatus, variant = "browse" }) {
+export default function Header({
+  tab,
+  onTabChange,
+  savedCount,
+  apiStatus,
+  variant = "browse",
+  user,
+  onLogout,
+}) {
   const location = useLocation();
   const onDashboard = variant === "dashboard" || location.pathname === "/dashboard";
 
@@ -59,10 +67,26 @@ export default function Header({ tab, onTabChange, savedCount, apiStatus, varian
           )}
         </nav>
 
-        <div className={`api-status ${apiStatus}`}>
-          {apiStatus === "ok" && "API connected"}
-          {apiStatus === "error" && "API offline"}
-          {apiStatus === "loading" && "Connecting…"}
+        <div className="header-actions">
+          {!onDashboard && (
+            user ? (
+              <div className="user-chip">
+                <span>{user.name || user.email}</span>
+                <button type="button" className="btn ghost user-logout" onClick={onLogout}>
+                  Log out
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="header-link login-link">
+                Sign in
+              </Link>
+            )
+          )}
+          <div className={`api-status ${apiStatus}`}>
+            {apiStatus === "ok" && "API connected"}
+            {apiStatus === "error" && "API offline"}
+            {apiStatus === "loading" && "Connecting…"}
+          </div>
         </div>
       </div>
     </header>

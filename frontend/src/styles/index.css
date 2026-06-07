@@ -1146,6 +1146,141 @@ body {
   color: var(--accent);
 }
 
+/* Login */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.login-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+.login-card h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 2rem;
+  margin: 0 0 0.35rem;
+}
+
+.login-sub {
+  color: var(--ink-muted);
+  margin: 0 0 1.5rem;
+}
+
+.login-back {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.login-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.login-form input {
+  font: inherit;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.login-test-accounts {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.login-test-accounts h2 {
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+}
+
+.login-test-accounts ul {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.test-account-btn {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.test-account-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.test-account-btn span {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.login-footnote {
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.user-logout {
+  padding: 0.35rem 0.65rem !important;
+  font-size: 0.75rem !important;
+  color: var(--ink) !important;
+  background: #fff !important;
+}
+
+.login-link {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+
 @media (max-width: 640px) {
   .header-inner { flex-direction: column; align-items: flex-start; }
   .filters-grid { grid-template-columns: 1fr; }

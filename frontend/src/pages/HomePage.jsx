@@ -10,6 +10,7 @@ import {
   addSavedJobId,
   removeSavedJobId,
 } from "../hooks/useSession";
+import { useAuth } from "../hooks/useAuth";
 
 const DEFAULT_FILTERS = {
   keyword: "",
@@ -25,6 +26,7 @@ const DEFAULT_FILTERS = {
 
 export default function HomePage() {
   const { sessionId } = useSession();
+  const { user, token, logout, isLoggedIn } = useAuth();
   const [tab, setTab] = useState("browse");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [meta, setMeta] = useState({ roles: [], locations: [], bands: [] });
@@ -131,7 +133,7 @@ export default function HomePage() {
   async function handleApply(jobId) {
     setApplying(true);
     try {
-      const { redirect_url } = await api.applyToJob(jobId, sessionId);
+      const { redirect_url } = await api.applyToJob(jobId, sessionId, token);
       window.open(redirect_url, "_blank", "noopener,noreferrer");
     } catch (e) {
       setError(e.message);
@@ -142,7 +144,7 @@ export default function HomePage() {
 
   async function handleSave(jobId) {
     try {
-      await api.saveJob(jobId, sessionId);
+      await api.saveJob(jobId, sessionId, token);
       addSavedJobId(jobId);
       setSavedIds(getSavedJobIds());
     } catch (e) {
@@ -166,6 +168,8 @@ export default function HomePage() {
         onTabChange={setTab}
         savedCount={savedIds.length}
         apiStatus={apiStatus}
+        user={isLoggedIn ? user : null}
+        onLogout={logout}
       />
 
       <main className="main">
