@@ -4,10 +4,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.constants.sites import SITE_ORDER, site_label
 from app.db.models import ExperienceBand, Job, Keyword, Location, RoleCategory
 from app.db.session import get_db
 from app.config import settings
-from app.schemas.meta import ConfigOut, ExperienceBandOut, KeywordOut, LocationOut, RoleCategoryOut
+from app.schemas.meta import (
+    ConfigOut,
+    ExperienceBandOut,
+    KeywordOut,
+    LocationOut,
+    RoleCategoryOut,
+    SiteOut,
+)
 
 router = APIRouter(prefix="/meta", tags=["meta"])
 
@@ -19,6 +27,27 @@ def get_config():
         default_results_wanted=settings.default_results_wanted,
         default_hours_old=settings.default_hours_old,
     )
+
+
+@router.get("/sites", response_model=list[SiteOut])
+def list_sites(db: Session = Depends(get_db)):
+    """Sources that have at least one active job in the DB (hide empty sites)."""
+    rows = (
+        db.query(Job.site, func.count(Job.id))
+        .filter(Job.is_active.is_(True))
+        .group_by(Job.site)
+        .all()
+    )
+    counts = {site: count for site, count in rows if count > 0}
+
+    ordered_slugs = [s for s in SITE_ORDER if s in counts]
+    extra = sorted(set(counts) - set(ordered_slugs))
+    ordered_slugs.extend(extra)
+
+    return [
+        SiteOut(slug=slug, label=site_label(slug), active_count=counts[slug])
+        for slug in ordered_slugs
+    ]
 
 
 @router.get("/roles", response_model=list[RoleCategoryOut])

@@ -51,6 +51,13 @@ export const api = {
   getRoles: () => request("/api/v1/meta/roles"),
   getLocations: () => request("/api/v1/meta/locations"),
   getExperienceBands: () => request("/api/v1/meta/experience-bands"),
+  getSites: () => request("/api/v1/meta/sites"),
+  getSearchProfiles: (adminKey, role) => {
+    const qs = role ? `?role=${encodeURIComponent(role)}` : "";
+    return request(`/api/v1/admin/scrape/profiles${qs}`, {
+      headers: { "X-Admin-Key": adminKey },
+    });
+  },
   getKeywords: (role) =>
     request(`/api/v1/meta/keywords${role ? `?role=${role}` : ""}`),
   getJobs: (params) => {
@@ -76,11 +83,19 @@ export const api = {
     }),
   getDashboardStats: () => request("/api/v1/dashboard/stats"),
   getDashboardRefreshStatus: () => request("/api/v1/dashboard/refresh/status"),
-  triggerDashboardRefresh: (limit, adminKey, full = false) =>
-    request(`/api/v1/dashboard/refresh?limit=${limit}&full=${full}`, {
+  triggerDashboardRefresh: ({ limit = 5, adminKey, full = false, profileIds = null } = {}) => {
+    const qs = new URLSearchParams();
+    if (profileIds?.length) {
+      profileIds.forEach((id) => qs.append("profile_ids", String(id)));
+    } else {
+      qs.set("limit", String(limit));
+      qs.set("full", String(full));
+    }
+    return request(`/api/v1/dashboard/refresh?${qs}`, {
       method: "POST",
       headers: { "X-Admin-Key": adminKey },
-    }),
+    });
+  },
   getTaggingQueue: (params, adminKey) => {
     const qs = new URLSearchParams();
     Object.entries(params).forEach(([k, v]) => {

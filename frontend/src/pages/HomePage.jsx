@@ -29,7 +29,7 @@ export default function HomePage() {
   const { user, token, logout, isLoggedIn } = useAuth();
   const [tab, setTab] = useState("browse");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [meta, setMeta] = useState({ roles: [], locations: [], bands: [] });
+  const [meta, setMeta] = useState({ roles: [], locations: [], bands: [], sites: [] });
   const [jobs, setJobs] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -45,12 +45,13 @@ export default function HomePage() {
     async function loadMeta() {
       try {
         await api.health();
-        const [roles, locations, bands] = await Promise.all([
+        const [roles, locations, bands, sites] = await Promise.all([
           api.getRoles(),
           api.getLocations(),
           api.getExperienceBands(),
+          api.getSites().catch(() => []),
         ]);
-        setMeta({ roles, locations, bands });
+        setMeta({ roles, locations, bands, sites });
         setApiStatus("ok");
       } catch {
         setApiStatus("error");

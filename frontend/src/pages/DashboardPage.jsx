@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, getAdminKey, setAdminKey } from "../api/client";
+import AdminScrapePanel from "../components/AdminScrapePanel";
 import Header from "../components/Header";
 import { formatDateTime, siteLabel } from "../utils/format";
 
@@ -42,6 +43,7 @@ function statusClass(status) {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState(null);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState("loading");
@@ -74,7 +76,8 @@ export default function DashboardPage() {
     async function init() {
       try {
         await api.health();
-        await loadStats();
+        const [_, roleList] = await Promise.all([loadStats(), api.getRoles().catch(() => [])]);
+        setRoles(roleList);
       } catch {
         setApiStatus("error");
         setLoading(false);
@@ -107,7 +110,11 @@ export default function DashboardPage() {
     setRefreshMessage(null);
     setError(null);
     try {
-      const res = await api.triggerDashboardRefresh(refreshLimit, key, fullScrape);
+      const res = await api.triggerDashboardRefresh({
+        limit: refreshLimit,
+        adminKey: key,
+        full: fullScrape,
+      });
       setRefreshMessage(res.message);
       await loadStats();
     } catch (e) {
@@ -317,6 +324,16 @@ export default function DashboardPage() {
             </button>
           </div>
         </section>
+
+        <AdminScrapePanel
+          adminKey={getAdminKey()}
+          roles={roles}
+          scrapeInProgress={stats?.scrape_in_progress}
+          onStarted={async (res) => {
+            setRefreshMessage(res.message);
+            await loadStats();
+          }}
+        />
 
         <div className="dash-grid">
           <BreakdownTable

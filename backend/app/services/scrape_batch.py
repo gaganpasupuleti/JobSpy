@@ -24,6 +24,25 @@ def run_scrape_batch(limit: int) -> None:
         db.close()
 
 
+def run_scrape_by_ids(profile_ids: list[int]) -> dict:
+    """Scrape specific search profiles by ID."""
+    db = SessionLocal()
+    try:
+        profiles = (
+            db.query(SearchProfile)
+            .filter(
+                SearchProfile.is_active.is_(True),
+                SearchProfile.id.in_(profile_ids),
+            )
+            .all()
+        )
+        order = {pid: i for i, pid in enumerate(profile_ids)}
+        profiles.sort(key=lambda p: order.get(p.id, len(profile_ids)))
+        return _scrape_profiles(db, profiles)
+    finally:
+        db.close()
+
+
 def run_full_scrape() -> dict:
     """Scrape all active profiles (12 roles × 15 cities × 6 levels = 1080)."""
     db = SessionLocal()

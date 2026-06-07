@@ -653,6 +653,91 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Admin scrape panel */
+.admin-panel h3 {
+  margin-top: 0;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.admin-toolbar select {
+  min-width: 160px;
+}
+
+.admin-selection-count {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  align-self: center;
+}
+
+.admin-profile-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.admin-role-group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  background: var(--bg);
+}
+
+.admin-role-header {
+  margin-bottom: 0.5rem;
+}
+
+.admin-role-meta {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  font-weight: 400;
+  margin-left: 0.35rem;
+}
+
+.admin-city-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-city-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.admin-city-chip:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.admin-scraped-hint {
+  color: var(--success);
+  font-size: 0.75rem;
+  margin-left: 0.15rem;
+}
+
 .footer {
   text-align: center;
   padding: 1.5rem;

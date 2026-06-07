@@ -67,10 +67,20 @@ export default function JobFilters({ filters, meta, onChange, onSearch, loading 
           Source
           <select value={filters.site} onChange={(e) => onChange("site", e.target.value)}>
             <option value="">All sources</option>
-            <option value="indeed">Indeed</option>
-            <option value="linkedin">LinkedIn</option>
-            <option value="naukri">Naukri</option>
-            <option value="foundit">Foundit</option>
+            {(meta.sites || []).length > 0 ? (
+              meta.sites.map((s) => (
+                <option key={s.slug} value={s.slug}>
+                  {s.label} ({s.active_count.toLocaleString("en-IN")})
+                </option>
+              ))
+            ) : (
+              <>
+                <option value="indeed">Indeed</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="naukri">Naukri</option>
+                <option value="foundit">Foundit</option>
+              </>
+            )}
           </select>
         </label>
 

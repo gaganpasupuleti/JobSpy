@@ -12,7 +12,7 @@ from app.schemas.dashboard import (
     DashboardStatsOut,
 )
 from app.services.dashboard_stats import get_dashboard_stats, is_scrape_in_progress
-from app.services.scrape_batch import run_full_scrape, run_scrape_batch
+from app.services.scrape_batch import run_full_scrape, run_scrape_batch, run_scrape_by_ids
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -54,6 +54,9 @@ def trigger_refresh(
     background_tasks: BackgroundTasks,
     limit: int = Query(5, ge=1, le=50),
     full: bool = Query(False, description="Scrape all active profiles (~1080)"),
+    profile_ids: list[int] | None = Query(
+        None, description="Specific search profile IDs to scrape in background"
+    ),
     db: Session = Depends(get_db),
 ):
     """Start a background scrape pass (requires X-Admin-Key)."""
@@ -61,6 +64,18 @@ def trigger_refresh(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A scrape is already in progress. Wait for it to finish.",
+        )
+
+    if profile_ids:
+        if len(profile_ids) > 200:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Select at most 200 profiles per background run.",
+            )
+        background_tasks.add_task(run_scrape_by_ids, profile_ids)
+        return DashboardRefreshOut(
+            message=f"Scrape started for {len(profile_ids)} selected profile(s)",
+            profiles_queued=len(profile_ids),
         )
 
     if full:

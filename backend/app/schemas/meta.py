@@ -47,3 +47,9 @@ class ConfigOut(BaseModel):
     default_sites: list[str]
     default_results_wanted: int
     default_hours_old: int
+
+
+class SiteOut(BaseModel):
+    slug: str
+    label: str
+    active_count: int
