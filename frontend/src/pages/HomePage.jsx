@@ -255,7 +255,7 @@ export default function HomePage() {
                 ? "Click ☆ Save on any job to bookmark it here."
                 : tab === "others"
                   ? "All scraped jobs are fully tagged, or run a scrape from the ops dashboard."
-                  : "Try different filters or run a scrape on the ops dashboard."}
+                  : "Browse only shows fully tagged jobs. Try the Others tab, run a scrape on /dashboard, or tag jobs at /dashboard/tag."}
             </p>
           </div>
         ) : (

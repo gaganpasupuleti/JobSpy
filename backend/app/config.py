@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +16,14 @@ class Settings(BaseSettings):
     link_verify_batch_size: int = 100
     link_verify_sleep_seconds: float = 1.0
     link_verify_stale_hours: int = 72
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        """Railway often provides postgres:// — SQLAlchemy 2 needs postgresql://."""
+        if isinstance(value, str) and value.startswith("postgres://"):
+            return "postgresql://" + value[len("postgres://") :]
+        return value
 
     @property
     def cors_origin_list(self) -> list[str]:

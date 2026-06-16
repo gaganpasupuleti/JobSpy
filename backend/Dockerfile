@@ -26,9 +26,11 @@ COPY jobspy /app/jobspy
 COPY pyproject.toml /app/pyproject.toml
 COPY backend /app/backend
 COPY run_worker.py /app/run_worker.py
+COPY backend/scripts/start.sh /app/backend/scripts/start.sh
+RUN chmod +x /app/backend/scripts/start.sh
 COPY --from=frontend-build /app/dist /app/backend/static
 
 ENV PYTHONPATH=/app:/app/backend
 WORKDIR /app/backend
 
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["/app/backend/scripts/start.sh"]

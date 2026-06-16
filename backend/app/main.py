@@ -1,15 +1,22 @@
 from contextlib import asynccontextmanager
+import logging
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import func, text
+from sqlalchemy.orm import Session
 
 from app.api import admin, admin_jobs, auth, dashboard, jobs, meta, tagging
 from app.config import settings
-from app.db.session import SessionLocal
+from app.db.models import Job
+from app.db.session import SessionLocal, get_db
 from app.seed.seed import seed_database
+from app.services.job_tagger import TagStatus
+
+logger = logging.getLogger(__name__)
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -19,6 +26,8 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_database(db)
+    except Exception:
+        logger.exception("Startup seed failed — API will still run; check DATABASE_URL and migrations")
     finally:
         db.close()
     yield
@@ -49,8 +58,28 @@ app.include_router(tagging.router, prefix="/api/v1")
 
 
 @app.get("/health")
-def health():
-    return {"status": "ok"}
+def health(db: Session = Depends(get_db)):
+    payload = {
+        "status": "ok",
+        "static_frontend": STATIC_DIR.is_dir(),
+        "checks": {},
+    }
+    try:
+        db.execute(text("SELECT 1"))
+        payload["checks"]["database"] = "ok"
+        payload["checks"]["jobs_live"] = (
+            db.query(func.count(Job.id)).filter(Job.is_active.is_(True)).scalar() or 0
+        )
+        payload["checks"]["jobs_tagged_complete"] = (
+            db.query(func.count(Job.id))
+            .filter(Job.is_active.is_(True), Job.tag_status == TagStatus.COMPLETE)
+            .scalar()
+            or 0
+        )
+    except Exception as exc:
+        payload["status"] = "degraded"
+        payload["checks"]["database"] = f"error: {exc.__class__.__name__}"
+    return payload
 
 
 def _mount_frontend() -> None:
