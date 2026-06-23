@@ -1,19 +1,23 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import HomePage from "./pages/HomePage";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import AlertsPage from "./pages/AlertsPage";
 import DashboardPage from "./pages/DashboardPage";
-import TaggingPage from "./pages/TaggingPage";
-import LoginPage from "./pages/LoginPage";
+import EmailLogsPage from "./pages/EmailLogsPage";
+import JobsPage from "./pages/JobsPage";
+import ScanRunsPage from "./pages/ScanRunsPage";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/dashboard/tag" element={<TaggingPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/email-logs" element={<EmailLogsPage />} />
+          <Route path="/scan-runs" element={<ScanRunsPage />} />
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }

@@ -1,118 +1,38 @@
-const BASE = import.meta.env.VITE_API_URL || "";
-const ADMIN_KEY_STORAGE = "jobboard_admin_key";
-
-export function getAdminKey() {
-  return import.meta.env.VITE_ADMIN_API_KEY || sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
-}
-
-export function setAdminKey(key) {
-  if (key) sessionStorage.setItem(ADMIN_KEY_STORAGE, key);
-  else sessionStorage.removeItem(ADMIN_KEY_STORAGE);
-}
-
-function authHeaders(token) {
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+const API_BASE = "/api";
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    const detail = err.detail;
-    const message =
-      typeof detail === "string"
-        ? detail
-        : Array.isArray(detail)
-          ? detail.map((d) => d.msg || JSON.stringify(d)).join("; ")
-          : detail
-            ? JSON.stringify(detail)
-            : `Request failed: ${res.status}`;
-    throw new Error(message);
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `Request failed: ${res.status}`);
   }
+  if (res.status === 204) return null;
   return res.json();
 }
 
 export const api = {
   health: () => request("/health"),
-  getTestAccounts: () => request("/api/v1/auth/test-accounts"),
-  login: (email, password) =>
-    request("/api/v1/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    }),
-  getMe: (token) =>
-    request("/api/v1/auth/me", { headers: authHeaders(token) }),
-  getRoles: () => request("/api/v1/meta/roles"),
-  getLocations: () => request("/api/v1/meta/locations"),
-  getExperienceBands: () => request("/api/v1/meta/experience-bands"),
-  getSites: () => request("/api/v1/meta/sites"),
-  getSearchProfiles: (adminKey, role) => {
-    const qs = role ? `?role=${encodeURIComponent(role)}` : "";
-    return request(`/api/v1/admin/scrape/profiles${qs}`, {
-      headers: { "X-Admin-Key": adminKey },
-    });
+  getJobs: (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v)
+    ).toString();
+    return request(`/jobs${qs ? `?${qs}` : ""}`);
   },
-  getKeywords: (role) =>
-    request(`/api/v1/meta/keywords${role ? `?role=${role}` : ""}`),
-  getJobs: (params) => {
-    const qs = new URLSearchParams();
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== "" && v !== null && v !== undefined) qs.set(k, v);
-    });
-    if (!qs.has("bucket")) qs.set("bucket", "tagged");
-    return request(`/api/v1/jobs?${qs}`);
-  },
-  getJob: (id) => request(`/api/v1/jobs/${id}`),
-  applyToJob: (id, sessionId, token = "") =>
-    request(`/api/v1/jobs/${id}/apply`, {
-      method: "POST",
-      headers: authHeaders(token),
-      body: JSON.stringify({ session_id: sessionId }),
-    }),
-  saveJob: (id, sessionId, token = "") =>
-    request(`/api/v1/jobs/${id}/save`, {
-      method: "POST",
-      headers: authHeaders(token),
-      body: JSON.stringify({ session_id: sessionId }),
-    }),
-  getDashboardStats: () => request("/api/v1/dashboard/stats"),
-  getDashboardRefreshStatus: () => request("/api/v1/dashboard/refresh/status"),
-  triggerDashboardRefresh: ({ limit = 5, adminKey, full = false, profileIds = null } = {}) => {
-    const qs = new URLSearchParams();
-    if (profileIds?.length) {
-      profileIds.forEach((id) => qs.append("profile_ids", String(id)));
-    } else {
-      qs.set("limit", String(limit));
-      qs.set("full", String(full));
-    }
-    return request(`/api/v1/dashboard/refresh?${qs}`, {
-      method: "POST",
-      headers: { "X-Admin-Key": adminKey },
-    });
-  },
-  getTaggingQueue: (params, adminKey) => {
-    const qs = new URLSearchParams();
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== undefined && v !== null && v !== "") qs.set(k, v);
-    });
-    return request(`/api/v1/admin/tagging/queue?${qs}`, {
-      headers: { "X-Admin-Key": adminKey },
-    });
-  },
-  getTaggingJob: (id, adminKey) =>
-    request(`/api/v1/admin/tagging/${id}`, {
-      headers: { "X-Admin-Key": adminKey },
-    }),
-  updateJobTags: (id, body, adminKey) =>
-    request(`/api/v1/admin/tagging/${id}`, {
-      method: "PATCH",
-      headers: { "X-Admin-Key": adminKey },
-      body: JSON.stringify(body),
-    }),
+  createJob: (data) =>
+    request("/jobs", { method: "POST", body: JSON.stringify(data) }),
+  importDemoJobs: () => request("/jobs/import-demo", { method: "POST" }),
+  getAlerts: () => request("/alerts"),
+  createAlert: (data) =>
+    request("/alerts", { method: "POST", body: JSON.stringify(data) }),
+  updateAlert: (id, data) =>
+    request(`/alerts/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteAlert: (id) => request(`/alerts/${id}`, { method: "DELETE" }),
+  sendTestAlert: (id) =>
+    request(`/alerts/${id}/send-test`, { method: "POST" }),
+  runDemoScan: () => request("/scans/run-demo", { method: "POST" }),
+  getEmailNotifications: () => request("/email-notifications"),
+  getScanRuns: () => request("/scan-runs"),
 };

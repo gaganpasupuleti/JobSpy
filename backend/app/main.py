@@ -1,111 +1,47 @@
-from contextlib import asynccontextmanager
 import logging
-from pathlib import Path
+from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-from sqlalchemy import func, text
-from sqlalchemy.orm import Session
 
-from app.api import admin, admin_jobs, auth, dashboard, jobs, meta, tagging
-from app.config import settings
-from app.db.models import Job
-from app.db.session import SessionLocal, get_db
-from app.seed.seed import seed_database
-from app.services.job_tagger import TagStatus
+from app.database import Base, engine
+from app.routers import api, scans
+from app.services.scan_service import seed_alert_rules_if_empty
+from app.database import SessionLocal
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 logger = logging.getLogger(__name__)
-
-STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        seed_database(db)
-    except Exception:
-        logger.exception("Startup seed failed — API will still run; check DATABASE_URL and migrations")
+        seed_alert_rules_if_empty(db)
+        logger.info("JobSpy Alerts Lab API ready (email mode: console)")
     finally:
         db.close()
     yield
 
 
 app = FastAPI(
-    title="JobSpy Job Board API",
-    description="India job board backend powered by JobSpy scrapers",
-    version="1.0.0",
+    title="JobSpy Alerts Lab API",
+    description="Standalone jobs + email alerts lab prototype",
+    version="0.1.0",
     lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origin_list,
+    allow_origins=["http://localhost:3002", "http://127.0.0.1:3002"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(jobs.router, prefix="/api/v1")
-app.include_router(meta.router, prefix="/api/v1")
-app.include_router(admin.router, prefix="/api/v1")
-app.include_router(admin_jobs.router, prefix="/api/v1")
-app.include_router(dashboard.router, prefix="/api/v1")
-app.include_router(tagging.router, prefix="/api/v1")
-
-
-@app.get("/health")
-def health(db: Session = Depends(get_db)):
-    payload = {
-        "status": "ok",
-        "static_frontend": STATIC_DIR.is_dir(),
-        "checks": {},
-    }
-    try:
-        db.execute(text("SELECT 1"))
-        payload["checks"]["database"] = "ok"
-        payload["checks"]["jobs_live"] = (
-            db.query(func.count(Job.id)).filter(Job.is_active.is_(True)).scalar() or 0
-        )
-        payload["checks"]["jobs_tagged_complete"] = (
-            db.query(func.count(Job.id))
-            .filter(Job.is_active.is_(True), Job.tag_status == TagStatus.COMPLETE)
-            .scalar()
-            or 0
-        )
-    except Exception as exc:
-        payload["status"] = "degraded"
-        payload["checks"]["database"] = f"error: {exc.__class__.__name__}"
-    return payload
-
-
-def _mount_frontend() -> None:
-    if not STATIC_DIR.is_dir():
-        return
-
-    assets_dir = STATIC_DIR / "assets"
-    if assets_dir.is_dir():
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
-
-    @app.get("/", include_in_schema=False)
-    async def spa_root():
-        return FileResponse(STATIC_DIR / "index.html")
-
-    @app.get("/{full_path:path}", include_in_schema=False)
-    async def spa_fallback(full_path: str):
-        blocked_prefixes = ("api/", "docs", "redoc", "openapi.json")
-        if full_path == "health" or full_path.startswith(blocked_prefixes):
-            raise HTTPException(status_code=404, detail="Not Found")
-
-        candidate = (STATIC_DIR / full_path).resolve()
-        if not str(candidate).startswith(str(STATIC_DIR.resolve())):
-            raise HTTPException(status_code=404, detail="Not Found")
-        if candidate.is_file():
-            return FileResponse(candidate)
-        return FileResponse(STATIC_DIR / "index.html")
-
-
-_mount_frontend()
+app.include_router(api.router, prefix="/api")
+app.include_router(scans.router, prefix="/api")

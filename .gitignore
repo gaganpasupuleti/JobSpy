@@ -1,4 +1,6 @@
 /venv/
+backend/venv/
+*.db
 /.idea
 **/__pycache__/
 **/.pytest_cache/
